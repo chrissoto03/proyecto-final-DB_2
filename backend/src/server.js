@@ -23,5 +23,6 @@ async function start() {
 start().catch((error) => {
   console.error('No se pudo iniciar la API. Revise .env, SQL Server y los procedimientos instalados.');
   console.error(error.code || error.name || 'Error de inicio');
+  console.error(error);
   process.exit(1);
 });

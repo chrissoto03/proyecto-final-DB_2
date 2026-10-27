@@ -4,8 +4,13 @@ const sql = require('mssql/msnodesqlv8');
 const config = require('./config');
 
 const pool = new sql.ConnectionPool({
-  server: config.dbServer,
-  database: config.dbName,
+  connectionString:
+    `Driver={ODBC Driver 18 for SQL Server};` +
+    `Server=${config.dbServer};` +
+    `Database=${config.dbName};` +
+    `Trusted_Connection=Yes;` +
+    `Encrypt=Yes;` +
+    `TrustServerCertificate=${config.trustServerCertificate ? 'Yes' : 'No'};`,
   options: {
     trustedConnection: true,
     trustServerCertificate: config.trustServerCertificate
