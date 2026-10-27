@@ -1,0 +1,77 @@
+openapi: 3.0.3
+info:
+  title: RentaTica API
+  version: 1.0.0
+  description: API REST que autentica con SQL Server y delega la logica de negocio a procedimientos almacenados.
+servers:
+  - url: http://localhost:3000
+paths:
+  /health:
+    get:
+      summary: Estado de la API y conexion SQL Server
+      responses:
+        '200':
+          description: API y base de datos disponibles
+        '503':
+          description: API iniciada sin conexion a base de datos
+  /api/auth/login:
+    post:
+      summary: Inicia sesion y devuelve un JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+      responses:
+        '200':
+          description: Credenciales validas; devuelve token y usuario
+        '401':
+          description: Credenciales invalidas
+        '403':
+          description: Negocio suspendido
+  /api/equipos:
+    get:
+      summary: Lista equipos del negocio del usuario autenticado
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: estado
+          schema:
+            type: string
+            enum: [Disponible, Reservado, Alquilado, Mantenimiento, Averiado, Fuera de servicio]
+          description: Estado por el que se filtra el inventario
+      responses:
+        '200':
+          description: Equipos obtenidos mediante un procedimiento almacenado
+        '401':
+          description: JWT ausente o invalido
+        '403':
+          description: Rol sin permiso
+  /api/reportes/inventario:
+    get:
+      summary: Resumen del inventario por categoria del negocio autenticado
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Inventario obtenido mediante un procedimiento almacenado
+        '401':
+          description: JWT ausente o invalido
+        '403':
+          description: Rol sin permiso
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
