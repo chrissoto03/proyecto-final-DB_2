@@ -10,6 +10,7 @@ const { pool } = require('./db');
 const authRoutes = require('./routes/auth');
 const equipoRoutes = require('./routes/equipos');
 const reportRoutes = require('./routes/reportes');
+const operationRoutes = require('./routes/operaciones');
 
 const app = express();
 app.disable('x-powered-by');
@@ -29,6 +30,7 @@ app.get('/health', (_req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/equipos', equipoRoutes);
 app.use('/api/reportes', reportRoutes);
+app.use('/api', operationRoutes);
 app.use((_req, res) => res.status(404).json({ error: 'Ruta no encontrada.' }));
 
 app.use((error, _req, res, _next) => {

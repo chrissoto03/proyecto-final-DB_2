@@ -1,22 +1,20 @@
 openapi: 3.0.3
 info:
   title: RentaTica API
-  version: 1.0.0
-  description: API REST que autentica con SQL Server y delega la logica de negocio a procedimientos almacenados.
+  version: 1.1.0
+  description: API REST que autentica con SQL Server y delega la lógica de negocio a procedimientos almacenados.
 servers:
   - url: http://localhost:3000
 paths:
   /health:
     get:
-      summary: Estado de la API y conexion SQL Server
+      summary: Estado de la API y conexión SQL Server
       responses:
-        '200':
-          description: API y base de datos disponibles
-        '503':
-          description: API iniciada sin conexion a base de datos
+        '200': { description: API y base de datos disponibles }
+        '503': { description: API iniciada sin conexión a base de datos }
   /api/auth/login:
     post:
-      summary: Inicia sesion y devuelve un JWT
+      summary: Inicia sesión y devuelve un JWT
       requestBody:
         required: true
         content:
@@ -25,50 +23,151 @@ paths:
               type: object
               required: [email, password]
               properties:
-                email:
-                  type: string
-                  format: email
-                password:
-                  type: string
-                  format: password
+                email: { type: string, format: email }
+                password: { type: string, format: password }
       responses:
-        '200':
-          description: Credenciales validas; devuelve token y usuario
-        '401':
-          description: Credenciales invalidas
-        '403':
-          description: Negocio suspendido
+        '200': { description: Credenciales válidas; devuelve token y usuario }
+        '401': { description: Credenciales inválidas }
+        '403': { description: Negocio suspendido }
   /api/equipos:
     get:
-      summary: Lista equipos del negocio del usuario autenticado
-      security:
-        - bearerAuth: []
+      summary: Lista equipos del negocio autenticado
+      security: [{ bearerAuth: [] }]
       parameters:
         - in: query
           name: estado
           schema:
             type: string
             enum: [Disponible, Reservado, Alquilado, Mantenimiento, Averiado, Fuera de servicio]
-          description: Estado por el que se filtra el inventario
       responses:
-        '200':
-          description: Equipos obtenidos mediante un procedimiento almacenado
-        '401':
-          description: JWT ausente o invalido
-        '403':
-          description: Rol sin permiso
+        '200': { description: Equipos consultados por procedimiento almacenado }
+        '401': { description: JWT ausente o inválido }
+        '403': { description: Rol sin permiso }
   /api/reportes/inventario:
     get:
-      summary: Resumen del inventario por categoria del negocio autenticado
-      security:
-        - bearerAuth: []
+      summary: Resumen de inventario por categoría
+      security: [{ bearerAuth: [] }]
       responses:
-        '200':
-          description: Inventario obtenido mediante un procedimiento almacenado
-        '401':
-          description: JWT ausente o invalido
-        '403':
-          description: Rol sin permiso
+        '200': { description: Reporte obtenido por procedimiento almacenado }
+  /api/clientes:
+    get:
+      summary: Lista clientes disponibles para crear una reserva
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Lista de clientes }
+        '401': { description: JWT ausente o inválido }
+        '403': { description: Rol sin permiso }
+  /api/metodos-pago:
+    get:
+      summary: Lista métodos de pago activos en el catálogo
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Métodos de pago }
+  /api/reservas/proximas:
+    get:
+      summary: Lista reservas próximas del negocio autenticado
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: dias
+          schema: { type: integer, minimum: 0, maximum: 365, default: 30 }
+      responses:
+        '200': { description: Reservas próximas }
+  /api/reservas:
+    get:
+      summary: Lista reservas del negocio con filtro opcional por estado
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: estado
+          schema: { type: string, enum: [Pendiente, Confirmada, En curso, Completada, Cancelada] }
+      responses:
+        '200': { description: Reservas del negocio autenticado }
+        '400': { description: Estado inválido }
+        '401': { description: JWT ausente o inválido }
+    post:
+      summary: Crea una reserva transaccional con equipos disponibles
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [cliente_id, equipo_ids, tipo_reserva, fecha_inicio, fecha_fin]
+              properties:
+                cliente_id: { type: integer, example: 19 }
+                equipo_ids: { type: array, minItems: 1, maxItems: 20, items: { type: integer }, example: [21] }
+                tipo_reserva: { type: string, enum: [Anticipada, Walk-in] }
+                fecha_inicio: { type: string, format: date-time }
+                fecha_fin: { type: string, format: date-time }
+      responses:
+        '201': { description: Reserva y detalles creados; devuelve total, saldo e identificadores }
+        '400': { description: Datos inválidos }
+        '401': { description: JWT ausente o inválido }
+        '403': { description: Reserva no permitida o equipo no disponible }
+        '409': { description: Conflicto por dato duplicado }
+  /api/reservas/{reserva_id}:
+    get:
+      summary: Obtiene encabezado, detalles, pagos y depósito de una reserva del negocio
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: reserva_id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200': { description: Detalle de reserva }
+        '404': { description: Reserva no encontrada en el negocio }
+  /api/reservas/{reserva_id}/pagos:
+    post:
+      summary: Registra un pago y devuelve la reserva actualizada
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: reserva_id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [metodo_pago_id, monto]
+              properties:
+                metodo_pago_id: { type: integer }
+                monto: { type: number, format: decimal, minimum: 0.01 }
+      responses:
+        '201': { description: Pago registrado y reserva actualizada }
+        '400': { description: Monto o método inválido }
+        '404': { description: Reserva no encontrada }
+        '403': { description: El pago excede el saldo o la reserva no es cobrable }
+  /api/devoluciones/{detalle_id}:
+    post:
+      summary: Registra devolución de un equipo y actualiza la reserva
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: detalle_id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [estado_devolucion]
+              properties:
+                estado_devolucion: { type: string, enum: [Bueno, Averiado, Perdido] }
+                monto_devuelto: { type: number, format: decimal, minimum: 0 }
+                monto_retencion: { type: number, format: decimal, minimum: 0 }
+      responses:
+        '200': { description: Devolución registrada }
+        '400': { description: Estado o montos inválidos }
+        '404': { description: Detalle no encontrado en el negocio }
+        '403': { description: Equipo ya devuelto o depósito no liquidable }
 components:
   securitySchemes:
     bearerAuth:

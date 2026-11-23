@@ -8,7 +8,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>RentaTica | Cliente de demostración</title>
+    <title>RentaTica | Gestión de alquileres</title>
     <link rel="stylesheet" href="~/css/site.css" />
 </head>
 <body>
@@ -16,9 +16,9 @@
     <header class="hero">
         <div class="brand-mark">RT</div>
         <div>
-            <p class="eyebrow">Cliente .NET · Integración HTTP</p>
+            <p class="eyebrow">Gestión de alquileres</p>
             <h1>RentaTica</h1>
-            <p class="subtitle">Cliente de demostración conectado al API REST.</p>
+            <p class="subtitle">Reservas, inventario y atención al cliente</p>
         </div>
         <a class="api-pill" href="http://localhost:3000/docs" target="_blank" rel="noreferrer">Abrir Swagger</a>
     </header>
@@ -39,22 +39,19 @@
                 <span class="step">01</span>
                 <div>
                     <h2>Iniciar sesión</h2>
-                    <p>El API valida las credenciales y entrega el token JWT.</p>
+                    <p>Inicia sesión para administrar las reservas de tu negocio.</p>
                 </div>
             </div>
             <form method="post" asp-page-handler="Login" class="form-grid">
-                <div asp-validation-summary="ModelOnly" class="validation"></div>
                 <label asp-for="Input.Email">Correo electrónico</label>
-                <input asp-for="Input.Email" autocomplete="username" placeholder="operador@negocio.test" />
+                <input asp-for="Input.Email" autocomplete="username" placeholder="operador@prueba.test" />
                 <span asp-validation-for="Input.Email" class="validation"></span>
-
                 <label asp-for="Input.Password">Contraseña</label>
                 <input asp-for="Input.Password" autocomplete="current-password" />
                 <span asp-validation-for="Input.Password" class="validation"></span>
-
                 <button class="button primary" type="submit">Entrar al sistema</button>
             </form>
-            <p class="hint">Usa las credenciales temporales que prepara <code>pruebas_api_preparar.sql</code>.</p>
+            <p class="hint">Usa el operador temporal del script <code>13_preparar_flujo_api.sql</code>.</p>
         </section>
     }
     else
@@ -70,13 +67,106 @@
             </form>
         </section>
 
-        <section class="actions">
-            <article class="card action-card">
-                <span class="step">02</span>
-                <h2>Consultar inventario</h2>
-                <p>Envía el estado solicitado al endpoint protegido de equipos.</p>
-                <form method="post" asp-page-handler="Equipos" class="inline-form">
-                    <label asp-for="Estado">Estado</label>
+        <section class="workflow-grid">
+            <article class="card workflow-card">
+                <span class="step">02 · 04</span>
+                <h2>Nueva reserva</h2>
+                <p>Selecciona cliente, equipo y horario. Walk-in comienza al registrar la reserva.</p>
+                <form method="post" asp-page-handler="CrearReserva" class="form-grid">
+                    <label asp-for="Reserva.ClienteId">Cliente</label>
+                    <select asp-for="Reserva.ClienteId">
+                        <option value="0">Selecciona un cliente</option>
+                        @foreach (var cliente in Model.Clientes)
+                        {
+                            <option value="@cliente.UsuarioId">@cliente.Nombre · @cliente.Email</option>
+                        }
+                    </select>
+                    <span asp-validation-for="Reserva.ClienteId" class="validation"></span>
+
+                    <label asp-for="Reserva.EquipoId">Equipo disponible</label>
+                    <select asp-for="Reserva.EquipoId">
+                        <option value="0">Selecciona un equipo</option>
+                        @foreach (var equipo in Model.EquiposDisponibles)
+                        {
+                            <option value="@equipo.EquipoId">@equipo.Codigo · @equipo.Categoria</option>
+                        }
+                    </select>
+                    <span asp-validation-for="Reserva.EquipoId" class="validation"></span>
+
+                    <label asp-for="Reserva.TipoReserva">Tipo</label>
+                    <select asp-for="Reserva.TipoReserva">
+                        <option value="Walk-in">Walk-in · empieza ahora</option>
+                        <option value="Anticipada">Anticipada · reserva futura</option>
+                    </select>
+
+                    <div id="inicio-anticipada" class="date-field" hidden>
+                        <label asp-for="Reserva.FechaInicio">Inicio de la reserva anticipada</label>
+                        <input asp-for="Reserva.FechaInicio" type="datetime-local" />
+                        <span asp-validation-for="Reserva.FechaInicio" class="validation"></span>
+                    </div>
+                    <p id="inicio-walkin" class="hint">En Walk-in, SQL Server asigna la hora de inicio al crear la reserva.</p>
+
+                    <label asp-for="Reserva.FechaFin">Fin del alquiler</label>
+                    <input asp-for="Reserva.FechaFin" type="datetime-local" />
+                    <span asp-validation-for="Reserva.FechaFin" class="validation"></span>
+
+                    <button class="button primary" type="submit">Crear reserva</button>
+                </form>
+                @if (Model.LastReservationId is not null)
+                {
+                    <p class="hint">Última reserva: <strong>@Model.LastReservationId</strong> · detalle: <strong>@Model.LastDetailId</strong></p>
+                }
+            </article>
+
+            <article class="card workflow-card">
+                <span class="step">03 · 04</span>
+                <h2>Registrar pago</h2>
+                <p>El importe sugerido corresponde al saldo pendiente de la última reserva.</p>
+                <form method="post" asp-page-handler="Pagar" class="form-grid">
+                    <label asp-for="Pago.ReservaId">Reserva ID</label>
+                    <input asp-for="Pago.ReservaId" type="number" min="1" />
+                    <span asp-validation-for="Pago.ReservaId" class="validation"></span>
+
+                    <label asp-for="Pago.MetodoPagoId">Método de pago</label>
+                    <select asp-for="Pago.MetodoPagoId">
+                        @foreach (var metodo in Model.MetodosPago)
+                        {
+                            <option value="@metodo.MetodoPagoId">@metodo.Nombre</option>
+                        }
+                    </select>
+                    <span asp-validation-for="Pago.MetodoPagoId" class="validation"></span>
+
+                    <label asp-for="Pago.Monto">Monto</label>
+                    <input asp-for="Pago.Monto" type="number" min="0.01" step="0.01" />
+                    <span asp-validation-for="Pago.Monto" class="validation"></span>
+                    <button class="button secondary" type="submit">Registrar pago</button>
+                </form>
+            </article>
+
+            <article class="card workflow-card">
+                <span class="step">04 · 04</span>
+                <h2>Devolver equipo</h2>
+                <p>El ID de detalle se completa al crear la reserva. “Bueno” devuelve el equipo a Disponible.</p>
+                <form method="post" asp-page-handler="Devolver" class="form-grid">
+                    <label asp-for="Devolucion.DetalleId">Detalle de reserva ID</label>
+                    <input asp-for="Devolucion.DetalleId" type="number" min="1" />
+                    <span asp-validation-for="Devolucion.DetalleId" class="validation"></span>
+                    <label asp-for="Devolucion.Estado">Estado al devolver</label>
+                    <select asp-for="Devolucion.Estado">
+                        <option value="Bueno">Bueno</option>
+                        <option value="Averiado">Averiado</option>
+                        <option value="Perdido">Perdido</option>
+                    </select>
+                    <button class="button secondary" type="submit">Registrar devolución</button>
+                </form>
+            </article>
+
+            <article class="card workflow-card">
+                <span class="step">CONSULTAS</span>
+                <h2>Inventario y reportes</h2>
+                <p>Consulta la disponibilidad y el resumen del inventario de tu negocio.</p>
+                <form method="post" asp-page-handler="Equipos" class="form-grid">
+                    <label asp-for="Estado">Estado de equipo</label>
                     <select asp-for="Estado">
                         <option>Disponible</option>
                         <option>Reservado</option>
@@ -87,16 +177,64 @@
                     </select>
                     <button class="button primary" type="submit">Consultar equipos</button>
                 </form>
-            </article>
-
-            <article class="card action-card">
-                <span class="step">03</span>
-                <h2>Reporte por categoría</h2>
-                <p>Solicita el resumen del inventario del negocio autenticado.</p>
-                <form method="post" asp-page-handler="ReporteInventario">
-                    <button class="button secondary" type="submit">Ver reporte</button>
+                <form method="post" asp-page-handler="ReporteInventario" class="report-form">
+                    <button class="button ghost" type="submit">Ver reporte por categoría</button>
                 </form>
             </article>
+        </section>
+
+        <section class="card reservations-panel">
+            <div class="reservations-heading">
+                <div>
+                    <span class="step">RESERVAS</span>
+                    <h2>Reservas del negocio</h2>
+                    <p>Consulta de un vistazo clientes, estado, fechas y monto.</p>
+                </div>
+                <span class="reservation-count">@Model.ReservasVisibles.Count visibles</span>
+            </div>
+            <form method="post" asp-page-handler="FiltrarReservas" class="reservation-toolbar">
+                <label asp-for="FiltroEstadoReserva">Filtrar por estado</label>
+                <select asp-for="FiltroEstadoReserva">
+                    <option value="">Todas las reservas</option>
+                    <option value="Pendiente">Pendientes</option>
+                    <option value="Confirmada">Confirmadas</option>
+                    <option value="En curso">En curso</option>
+                    <option value="Completada">Completadas</option>
+                    <option value="Cancelada">Canceladas</option>
+                </select>
+                <button class="button ghost" type="submit">Actualizar lista</button>
+            </form>
+            @if (Model.ReservasVisibles.Count == 0)
+            {
+                <div class="empty-reservations">
+                    <strong>No hay reservas para mostrar</strong>
+                    <span>Crea una reserva arriba o cambia el filtro.</span>
+                </div>
+            }
+            else
+            {
+                <div class="reservation-list">
+                    @foreach (var reserva in Model.ReservasVisibles)
+                    {
+                        <article class="reservation-item">
+                            <div class="reservation-item-heading">
+                                <div>
+                                    <span class="reservation-id">Reserva #@reserva.ReservaId</span>
+                                    <h3>@reserva.Cliente</h3>
+                                </div>
+                                <span class="status-badge status-@reserva.EstadoCss">@reserva.Estado</span>
+                            </div>
+                            <div class="reservation-info">
+                                <div><span>Tipo</span><strong>@reserva.TipoReserva</strong></div>
+                                <div><span>Inicio</span><strong>@reserva.FechaInicio.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</strong></div>
+                                <div><span>Fin</span><strong>@reserva.FechaFin.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</strong></div>
+                                <div><span>Equipos</span><strong>@reserva.TotalEquipos</strong></div>
+                                <div><span>Total</span><strong>@reserva.MontoFinal.ToString("N2")</strong></div>
+                            </div>
+                        </article>
+                    }
+                </div>
+            }
         </section>
     }
 
@@ -107,15 +245,28 @@
                 <span class="step">JSON</span>
                 <div>
                     <h2>Respuesta del API</h2>
-                    <p>El cliente presenta la respuesta recibida del servicio.</p>
+                    <p>Los IDs de reserva y detalle aparecen aquí después de crearla.</p>
                 </div>
             </div>
             <pre><code>@Model.ResponseJson</code></pre>
         </section>
     }
 
-    <footer>RentaTica · Cliente de demostración para R4</footer>
+    <footer>RentaTica · Demostración del flujo de alquiler para R4</footer>
 </main>
+<script>
+    (() => {
+        const tipo = document.getElementById('Reserva_TipoReserva');
+        const anticipada = document.getElementById('inicio-anticipada');
+        const walkin = document.getElementById('inicio-walkin');
+        const actualizar = () => {
+            const esWalkin = tipo.value === 'Walk-in';
+            anticipada.hidden = esWalkin;
+            walkin.hidden = !esWalkin;
+        };
+        tipo.addEventListener('change', actualizar);
+        actualizar();
+    })();
+</script>
 </body>
 </html>
-

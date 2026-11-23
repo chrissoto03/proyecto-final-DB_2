@@ -16,12 +16,13 @@ BEGIN
     SET NOCOUNT ON;
     SET XACT_ABORT ON;
     BEGIN TRY
+        -- El reloj de SQL Server es la fuente de verdad para una atencion inmediata.
+        -- Asi no depende del reloj ni de la zona horaria del cliente/API.
+        IF @tipo_reserva='Walk-in' SET @fecha_inicio=GETDATE();
         IF @tipo_reserva IS NULL OR @tipo_reserva NOT IN ('Anticipada','Walk-in') OR @fecha_inicio IS NULL
            OR @fecha_fin IS NULL OR @fecha_fin <= @fecha_inicio
            OR ISJSON(@equipos_json) <> 1 OR LEFT(LTRIM(@equipos_json),1) <> '['
             THROW 50003, 'Tipo, fechas o lista JSON de equipos invalida.', 1;
-        IF @tipo_reserva='Walk-in' AND @fecha_inicio>GETDATE()
-            THROW 50003, 'Una reserva Walk-in debe iniciar ahora o antes.', 1;
         IF @tipo_reserva='Walk-in' AND @operador_id IS NULL
             THROW 50003, 'Una reserva Walk-in requiere el operador que atiende.', 1;
         IF NOT EXISTS (SELECT 1 FROM renta.Usuario u JOIN renta.Rol r ON r.rol_id=u.rol_id

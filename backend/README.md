@@ -1,54 +1,47 @@
 # RentaTica API
 
-API REST para SQL Server. El inicio de sesion delega la verificacion de credenciales al SP
-renta.usp_Auth_ValidarCredenciales y devuelve JWT con expiracion de 8 horas. Las rutas de
-inventario delegan las consultas a SPs y toman negocio_id y rol de los claims firmados.
+API REST para SQL Server. La autenticación delega al SP `renta.usp_Auth_ValidarCredenciales`; las rutas reciben JWT y ejecutan procedimientos almacenados. El negocio y el usuario se toman de los claims firmados, nunca del cuerpo enviado por el cliente.
 
-## Requisitos
+## Requisitos e instalación
 
 - Node.js 20 o superior.
 - SQL Server accesible desde la computadora que ejecuta el API.
-- El usuario de Windows que ejecuta Node debe tener permiso para ejecutar los procedimientos
-  almacenados usados por la API en RentaTicaDB.
-- TCP/IP habilitado y SQL Server Browser accesible para resolver la instancia nombrada.
-
-## Instalacion local
+- El usuario de Windows que ejecuta Node debe tener permiso de ejecutar los SPs usados por la API en `RentaTicaDB`.
+- TCP/IP habilitado y SQL Server Browser accesible para resolver `CCC\MSSQLSERVER01`.
 
 Desde esta carpeta:
 
-1. Copie .env.example como .env.
-2. Genere una clave JWT con node -e "console.log(require('node:crypto').randomBytes(48).toString('base64url'))".
-3. Pegue el resultado en JWT_SECRET en .env. No comparta ni suba .env al repositorio.
-4. Revise DB_SERVER. El valor inicial usa CCC\MSSQLSERVER01 y autenticacion integrada de Windows.
-5. Ejecute npm.cmd install.
-6. Ejecute npm.cmd run check.
-7. Ejecute npm.cmd start.
+1. Copia `.env.example` a `.env` si aún no existe.
+2. Configura un `JWT_SECRET` aleatorio de al menos 32 bytes; no lo compartas ni lo subas.
+3. Revisa `DB_SERVER=CCC\MSSQLSERVER01` y `DB_NAME=RentaTicaDB`.
+4. Ejecuta `npm.cmd install` una vez.
+5. Ejecuta `npm.cmd run check`.
+6. Ejecuta `npm.cmd start`.
 
-La API escucha en http://localhost:3000. La documentacion interactiva esta en /docs y el
-documento OpenAPI en /openapi.yaml. El endpoint /health confirma si la base esta conectada.
+El API escucha en `http://localhost:3000`; la salud es `/health`, Swagger en `/docs` y OpenAPI en `/openapi.yaml`.
 
-## Endpoints
+## Endpoints principales
 
-- POST /api/auth/login con JSON {"email":"...","password":"..."} llama a
-  renta.usp_Auth_ValidarCredenciales y devuelve un JWT.
-- GET /api/equipos?estado=Disponible requiere Bearer JWT y rol Administrador u Operador;
-  llama a renta.usp_Equipo_ListarPorEstado con el negocio_id del token.
-- GET /api/reportes/inventario requiere Bearer JWT y rol Administrador u Operador; llama a
-  renta.usp_Reporte_InventarioPorCategoria con el negocio_id del token.
+- `POST /api/auth/login`: autentica con `usp_Auth_ValidarCredenciales` y entrega JWT de 8 horas.
+- `GET /api/equipos?estado=Disponible`: inventario del negocio, SP `usp_Equipo_ListarPorEstado`.
+- `GET /api/reportes/inventario`: SP `usp_Reporte_InventarioPorCategoria`.
+- `GET /api/clientes`, `GET /api/metodos-pago`: catálogos para el formulario de reserva/pago.
+- `POST /api/reservas`: ejecuta `usp_Reserva_Crear` con el operador del token, el cliente, rango y arreglo de IDs de equipo.
+- `GET /api/reservas?estado=En%20curso` lista reservas del negocio (filtro opcional); `GET /api/reservas/proximas?dias=30` y `GET /api/reservas/{reserva_id}`: lista/detalle por negocio; el detalle incluye cada `detalle_id` necesario para devolución.
+- `POST /api/reservas/{reserva_id}/pagos`: SP `usp_Pago_Registrar`.
+- `POST /api/devoluciones/{detalle_id}`: SP `usp_Equipo_Devolver`; el usuario de auditoría viene del JWT.
 
-En produccion, publique el servicio detras de HTTPS. La API no guarda credenciales SQL: usa
-la identidad Windows que ejecuta el proceso y toma el secreto JWT de .env.
+Las reglas de reserva, pago, disponibilidad, estados y devolución siguen en SQL Server. La API valida el formato HTTP y convierte errores conocidos de SP a respuestas HTTP.
 
-## Verificacion manual de la API
+## Prueba manual del ciclo en SSMS y .NET
 
-1. Ejecute una vez `database/05_tests/pruebas_api_preparar.sql` en SSMS y conserve el escenario hasta terminar.
-2. En `backend`, copie `.env.example` a `.env`, genere y configure `JWT_SECRET`, y ejecute `npm.cmd install` y `npm.cmd start`.
-3. Haga login con el correo y contrasena temporal que devuelve el script:
+1. Ejecuta `database/05_tests/13_preparar_flujo_api.sql` una vez en SSMS. Guarda los IDs que devuelve (en especial `cliente_id`) y las credenciales temporales.
+2. Inicia el API con `npm.cmd start`; confirma `http://localhost:3000/health`.
+3. Abre `cliente-dotnet/ClienteRentaTica.sln` en Visual Studio y pulsa F5. Inicia sesión con el operador temporal.
+4. En **Nueva reserva**, selecciona el cliente y `FLUJO-001`, usa `Walk-in` y conserva la fecha final sugerida; la API asigna el inicio a su hora actual. Crea la reserva. Anota `reserva_id`, `detalle_id` y `monto_final` que aparecen en la respuesta.
+5. En **Registrar pago**, usa ese `reserva_id`, el método `Efectivo` y el monto final. La respuesta debe mostrar el pago registrado.
+6. En **Devolver equipo**, usa el `detalle_id` y estado `Bueno`. La respuesta confirma la devolución; el equipo vuelve a Disponible y la reserva pasa a Completada.
+7. Revisa **Consultar equipos** y **Reporte por categoría**.
+8. Detén el cliente y el API; en SSMS ejecuta `database/05_tests/14_limpiar_flujo_api.sql`.
 
-```powershell
-$login = Invoke-RestMethod -Method Post -Uri 'http://localhost:3000/api/auth/login' -ContentType 'application/json' -Body (@{ email = 'operador@api.prueba.test'; password = 'RentaTicaAPI2026!' } | ConvertTo-Json)
-$headers = @{ Authorization = "Bearer $($login.token)" }
-Invoke-RestMethod -Uri 'http://localhost:3000/api/equipos?estado=Disponible' -Headers $headers
-```
-
-4. La respuesta debe incluir el equipo `API-001`. Luego ejecute `database/05_tests/pruebas_api_limpiar.sql`.
+También puedes probar las mismas rutas en Swagger `/docs`, primero usando `POST /api/auth/login` y luego autorizando con el JWT. No compartas el token.

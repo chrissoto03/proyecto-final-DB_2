@@ -21,7 +21,7 @@ Para desplegar la base de datos, sigue el orden de `database/README.md`. Inicia
 el API siguiendo `backend/README.md`. Para abrir la aplicación de demostración,
 abre `cliente-dotnet/ClienteRentaTica.sln` en Visual Studio, selecciona
 `ClienteRentaTica` como proyecto de inicio y pulsa F5; el navegador usa
-`http://localhost:5180` y el API debe estar en `http://localhost:3000`.
+`http://localhost:5180` y el API debe estar en `http://localhost:3000`. Guía detallada de uso: `cliente-dotnet/README.md`.
 
 La captura y comparación de planes de ejecución de R4 se documenta en
 `docs/optimizacion/README.md`. Captura los planes base antes de crear índices.

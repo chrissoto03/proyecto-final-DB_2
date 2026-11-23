@@ -3,10 +3,21 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace ClienteRentaTica.Pages;
+
+[AttributeUsage(AttributeTargets.Property)]
+public sealed class PositiveMoneyAttribute : ValidationAttribute
+{
+    public override bool IsValid(object? value)
+    {
+        return value is decimal amount && amount >= 0.01m && amount <= 99999999.99m &&
+               decimal.Round(amount, 2) == amount;
+    }
+}
 
 public sealed class IndexModel(IHttpClientFactory httpClientFactory) : PageModel
 {
@@ -14,8 +25,15 @@ public sealed class IndexModel(IHttpClientFactory httpClientFactory) : PageModel
     private const string EmailKey = "rentatica-user-email";
     private const string NameKey = "rentatica-user-name";
     private const string RoleKey = "rentatica-user-role";
+    private const string LastReservationKey = "rentatica-last-reservation";
+    private const string LastDetailKey = "rentatica-last-detail";
+    private const string LastAmountKey = "rentatica-last-amount";
 
-    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        WriteIndented = true,
+        PropertyNameCaseInsensitive = true
+    };
 
     [BindProperty]
     public LoginInput Input { get; set; } = new();
@@ -23,29 +41,48 @@ public sealed class IndexModel(IHttpClientFactory httpClientFactory) : PageModel
     [BindProperty]
     public string? Estado { get; set; } = "Disponible";
 
+    [BindProperty]
+    public ReservationInput Reserva { get; set; } = new();
+
+    [BindProperty]
+    public PaymentInput Pago { get; set; } = new();
+
+    [BindProperty]
+    public ReturnInput Devolucion { get; set; } = new();
+
+    public List<CustomerOption> Clientes { get; private set; } = [];
+    public List<EquipmentOption> EquiposDisponibles { get; private set; } = [];
+    public List<PaymentMethodOption> MetodosPago { get; private set; } = [];
+    public List<ReservationSummary> Reservas { get; private set; } = [];
+
+    [BindProperty]
+    public string FiltroEstadoReserva { get; set; } = "";
+
+    public List<ReservationSummary> ReservasVisibles => string.IsNullOrWhiteSpace(FiltroEstadoReserva)
+        ? Reservas
+        : Reservas.Where(reserva => reserva.Estado.Equals(FiltroEstadoReserva, StringComparison.OrdinalIgnoreCase)).ToList();
+
     public bool IsAuthenticated => !string.IsNullOrWhiteSpace(HttpContext.Session.GetString(TokenKey));
     public string DisplayEmail => HttpContext.Session.GetString(EmailKey) ?? "";
     public string DisplayName => HttpContext.Session.GetString(NameKey) ?? DisplayEmail;
     public string DisplayRole => HttpContext.Session.GetString(RoleKey) ?? "";
+    public int? LastReservationId => ReadSessionInt(LastReservationKey);
+    public int? LastDetailId => ReadSessionInt(LastDetailKey);
     public string? StatusMessage { get; private set; }
     public string? ErrorMessage { get; private set; }
     public string? ResponseJson { get; private set; }
 
+    public async Task OnGetAsync()
+    {
+        SetFormDefaults();
+        await LoadReferenceDataAsync();
+    }
+
     public async Task<IActionResult> OnPostLoginAsync()
     {
-        if (!ModelState.IsValid)
+        if (HasErrorsFor(nameof(Input)))
         {
-            var validationErrors = ModelState
-                .Where(entry => entry.Value is not null && entry.Value.Errors.Count > 0)
-                .SelectMany(entry => entry.Value!.Errors.Select(error =>
-                    string.IsNullOrWhiteSpace(error.ErrorMessage)
-                        ? $"{entry.Key}: valor inválido."
-                        : $"{entry.Key}: {error.ErrorMessage}"))
-                .ToArray();
-
-            ErrorMessage = validationErrors.Length == 0
-                ? "El formulario no pasó la validación. Revisa los campos e intenta otra vez."
-                : string.Join(" ", validationErrors);
+            ErrorMessage = GetValidationErrors(nameof(Input));
             return Page();
         }
 
@@ -80,7 +117,9 @@ public sealed class IndexModel(IHttpClientFactory httpClientFactory) : PageModel
 
             Input.Password = "";
             ModelState.Clear();
-            StatusMessage = "Inicio de sesión correcto. El token se guarda en la sesión del cliente.";
+            StatusMessage = "Sesión iniciada. Ya puedes crear una reserva de prueba.";
+            SetFormDefaults();
+            await LoadReferenceDataAsync();
             return Page();
         }
         catch (HttpRequestException)
@@ -95,15 +134,117 @@ public sealed class IndexModel(IHttpClientFactory httpClientFactory) : PageModel
         }
     }
 
-    public Task<IActionResult> OnPostEquiposAsync()
+    public async Task<IActionResult> OnPostEquiposAsync()
     {
         var estado = Uri.EscapeDataString(Estado ?? "Disponible");
-        return GetProtectedAsync("api/equipos?estado=" + estado, "Consulta de equipos completada.");
+        return await GetProtectedPageAsync("api/equipos?estado=" + estado, "Consulta de equipos completada.");
     }
 
-    public Task<IActionResult> OnPostReporteInventarioAsync()
+    public async Task<IActionResult> OnPostReporteInventarioAsync()
     {
-        return GetProtectedAsync("api/reportes/inventario", "Reporte de inventario completado.");
+        return await GetProtectedPageAsync("api/reportes/inventario", "Reporte de inventario completado.");
+    }
+
+    public async Task<IActionResult> OnPostCrearReservaAsync()
+    {
+        if (HasErrorsFor(nameof(Reserva)))
+        {
+            ErrorMessage = GetValidationErrors(nameof(Reserva));
+            await LoadReferenceDataAsync();
+            return Page();
+        }
+
+        var payload = new
+        {
+            cliente_id = Reserva.ClienteId,
+            equipo_ids = new[] { Reserva.EquipoId },
+            tipo_reserva = Reserva.TipoReserva,
+            fecha_inicio = Reserva.FechaInicio,
+            fecha_fin = Reserva.FechaFin
+        };
+        var result = await SendProtectedAsync(HttpMethod.Post, "api/reservas", payload);
+        if (result is null)
+        {
+            await LoadReferenceDataAsync();
+            return Page();
+        }
+
+        ResponseJson = FormatJson(result);
+        RememberCreatedReservation(result);
+        StatusMessage = "Reserva creada. El monto y el detalle se prepararon para los siguientes pasos.";
+        ModelState.Clear();
+        SetFormDefaults();
+        await LoadReferenceDataAsync();
+        return Page();
+    }
+
+    public async Task<IActionResult> OnPostPagarAsync()
+    {
+        if (HasErrorsFor(nameof(Pago)))
+        {
+            ErrorMessage = GetValidationErrors(nameof(Pago));
+            await LoadReferenceDataAsync();
+            return Page();
+        }
+
+        var result = await SendProtectedAsync(
+            HttpMethod.Post,
+            $"api/reservas/{Pago.ReservaId}/pagos",
+            new { metodo_pago_id = Pago.MetodoPagoId, monto = Pago.Monto });
+        if (result is null)
+        {
+            await LoadReferenceDataAsync();
+            return Page();
+        }
+
+        ResponseJson = FormatJson(result);
+        StatusMessage = "Pago registrado. Revisa la reserva y continúa con la devolución.";
+        RememberReservationDetails(result);
+        ModelState.Clear();
+        SetFormDefaults();
+        await LoadReferenceDataAsync();
+        return Page();
+    }
+
+    public async Task<IActionResult> OnPostDevolverAsync()
+    {
+        if (HasErrorsFor(nameof(Devolucion)))
+        {
+            ErrorMessage = GetValidationErrors(nameof(Devolucion));
+            await LoadReferenceDataAsync();
+            return Page();
+        }
+
+        var result = await SendProtectedAsync(
+            HttpMethod.Post,
+            $"api/devoluciones/{Devolucion.DetalleId}",
+            new { estado_devolucion = Devolucion.Estado });
+        if (result is null)
+        {
+            await LoadReferenceDataAsync();
+            return Page();
+        }
+
+        var updatedReservation = LastReservationId is int reservationId
+            ? await SendProtectedAsync(HttpMethod.Get, $"api/reservas/{reservationId}")
+            : null;
+        ResponseJson = FormatJson(updatedReservation ?? result);
+        StatusMessage = updatedReservation is null
+            ? "Devolución registrada."
+            : "Devolución registrada. La respuesta muestra la reserva y el estado actualizado del equipo.";
+        HttpContext.Session.Remove(LastReservationKey);
+        HttpContext.Session.Remove(LastDetailKey);
+        HttpContext.Session.Remove(LastAmountKey);
+        ModelState.Clear();
+        SetFormDefaults();
+        await LoadReferenceDataAsync();
+        return Page();
+    }
+
+    public async Task<IActionResult> OnPostFiltrarReservasAsync()
+    {
+        await LoadReferenceDataAsync();
+        return Page();
     }
 
     public IActionResult OnPostLogout()
@@ -113,20 +254,33 @@ public sealed class IndexModel(IHttpClientFactory httpClientFactory) : PageModel
         return Page();
     }
 
-    private async Task<IActionResult> GetProtectedAsync(string relativePath, string successMessage)
+    private async Task<IActionResult> GetProtectedPageAsync(string path, string successMessage)
+    {
+        var body = await SendProtectedAsync(HttpMethod.Get, path);
+        if (body is not null)
+        {
+            ResponseJson = FormatJson(body);
+            StatusMessage = successMessage;
+        }
+        await LoadReferenceDataAsync();
+        return Page();
+    }
+
+    private async Task<string?> SendProtectedAsync(HttpMethod method, string path, object? payload = null)
     {
         var token = HttpContext.Session.GetString(TokenKey);
         if (string.IsNullOrWhiteSpace(token))
         {
-            ErrorMessage = "Inicia sesión antes de consultar el API.";
-            return Page();
+            ErrorMessage = "Inicia sesión antes de usar las operaciones.";
+            return null;
         }
 
         try
         {
             var client = httpClientFactory.CreateClient("RentaTicaApi");
-            using var request = new HttpRequestMessage(HttpMethod.Get, relativePath);
+            using var request = new HttpRequestMessage(method, path);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            if (payload is not null) request.Content = JsonContent.Create(payload);
             using var response = await client.SendAsync(request);
             var body = await response.Content.ReadAsStringAsync();
 
@@ -134,30 +288,154 @@ public sealed class IndexModel(IHttpClientFactory httpClientFactory) : PageModel
             {
                 HttpContext.Session.Clear();
                 ErrorMessage = "La sesión venció o el token ya no es válido. Inicia sesión otra vez.";
-                return Page();
+                return null;
             }
-
             if (!response.IsSuccessStatusCode)
             {
                 ErrorMessage = ReadApiError(body) ?? "El API respondió con HTTP " + (int)response.StatusCode + ".";
-                return Page();
+                return null;
             }
-
-            ResponseJson = FormatJson(body);
-            StatusMessage = successMessage;
-            return Page();
+            return body;
         }
         catch (HttpRequestException)
         {
             ErrorMessage = "No se pudo contactar al API. Confirma que esté activo en http://localhost:3000.";
-            return Page();
+            return null;
         }
         catch (JsonException)
         {
             ErrorMessage = "El API respondió con un formato JSON inesperado.";
-            return Page();
+            return null;
         }
     }
+
+    private async Task LoadReferenceDataAsync()
+    {
+        Clientes = [];
+        EquiposDisponibles = [];
+        MetodosPago = [];
+        Reservas = [];
+        if (!IsAuthenticated) return;
+
+        Clientes = await LoadListAsync<CustomerOption>("api/clientes");
+        EquiposDisponibles = await LoadListAsync<EquipmentOption>("api/equipos?estado=Disponible");
+        MetodosPago = await LoadListAsync<PaymentMethodOption>("api/metodos-pago");
+        Reservas = await LoadListAsync<ReservationSummary>("api/reservas");
+        if (Pago.MetodoPagoId <= 0 && MetodosPago.Count > 0)
+            Pago.MetodoPagoId = MetodosPago[0].MetodoPagoId;
+        if (Pago.ReservaId <= 0)
+            Pago.ReservaId = LastReservationId ?? 0;
+        if (Pago.Monto <= 0 && decimal.TryParse(HttpContext.Session.GetString(LastAmountKey), System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var amount))
+            Pago.Monto = amount;
+        if (Devolucion.DetalleId <= 0)
+            Devolucion.DetalleId = LastDetailId ?? 0;
+    }
+
+    private async Task<List<T>> LoadListAsync<T>(string path)
+    {
+        var body = await SendProtectedAsync(HttpMethod.Get, path);
+        if (body is null) return [];
+        try
+        {
+            using var document = JsonDocument.Parse(body);
+            if (!document.RootElement.TryGetProperty("datos", out var data) || data.ValueKind != JsonValueKind.Array)
+                return [];
+            return JsonSerializer.Deserialize<List<T>>(data.GetRawText(), JsonOptions) ?? [];
+        }
+        catch (JsonException)
+        {
+            ErrorMessage = "No se pudieron leer los catálogos del API.";
+            return [];
+        }
+    }
+
+    private bool HasErrorsFor(string prefix)
+    {
+        return ModelState.Any(entry =>
+            (entry.Key.Equals(prefix, StringComparison.OrdinalIgnoreCase) ||
+             entry.Key.StartsWith(prefix + ".", StringComparison.OrdinalIgnoreCase)) &&
+            entry.Value?.Errors.Count > 0);
+    }
+
+    private string GetValidationErrors(string prefix)
+    {
+        var errors = ModelState
+            .Where(entry => entry.Key.Equals(prefix, StringComparison.OrdinalIgnoreCase) ||
+                            entry.Key.StartsWith(prefix + ".", StringComparison.OrdinalIgnoreCase))
+            .SelectMany(entry => entry.Value?.Errors.Select(error => error.ErrorMessage) ?? [])
+            .Where(message => !string.IsNullOrWhiteSpace(message))
+            .Distinct()
+            .ToArray();
+        return errors.Length > 0 ? string.Join(" ", errors) : "Revisa los datos del formulario e intenta otra vez.";
+    }
+
+    private void SetFormDefaults()
+    {
+        if (Reserva.FechaInicio == default) Reserva.FechaInicio = DateTime.Now.AddMinutes(-1);
+        if (Reserva.FechaFin == default) Reserva.FechaFin = DateTime.Now.AddHours(2);
+        if (string.IsNullOrWhiteSpace(Reserva.TipoReserva)) Reserva.TipoReserva = "Walk-in";
+        if (Pago.ReservaId <= 0) Pago.ReservaId = LastReservationId ?? 0;
+        if (Pago.Monto <= 0 && decimal.TryParse(HttpContext.Session.GetString(LastAmountKey), System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var amount))
+            Pago.Monto = amount;
+        if (Devolucion.DetalleId <= 0) Devolucion.DetalleId = LastDetailId ?? 0;
+    }
+
+    private void RememberCreatedReservation(string body)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(body);
+            RememberReservationDetails(document.RootElement);
+        }
+        catch (JsonException)
+        {
+            // La respuesta ya está mostrada; si falta un identificador el usuario puede copiarlo del JSON.
+        }
+    }
+
+    private void RememberReservationDetails(string body)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(body);
+            RememberReservationDetails(document.RootElement);
+        }
+        catch (JsonException)
+        {
+            // La respuesta ya está mostrada; no se oculta el resultado de la operación.
+        }
+    }
+
+    private void RememberReservationDetails(JsonElement root)
+    {
+        if (root.TryGetProperty("reserva_id", out var id) && id.TryGetInt32(out var reservaId))
+        {
+            HttpContext.Session.SetInt32(LastReservationKey, reservaId);
+            Pago.ReservaId = reservaId;
+        }
+        if (root.TryGetProperty("reserva", out var reserva))
+        {
+            var hasAmount = false;
+            decimal amount = 0;
+            if (reserva.TryGetProperty("saldo", out var saldo))
+                hasAmount = saldo.TryGetDecimal(out amount);
+            if (!hasAmount && reserva.TryGetProperty("monto_final", out var total))
+                hasAmount = total.TryGetDecimal(out amount);
+            if (hasAmount)
+            {
+                HttpContext.Session.SetString(LastAmountKey, amount.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                Pago.Monto = amount;
+            }
+        }
+        if (root.TryGetProperty("detalles", out var details) && details.ValueKind == JsonValueKind.Array && details.GetArrayLength() > 0 &&
+            details[0].TryGetProperty("detalle_id", out var detailId) && detailId.TryGetInt32(out var parsedDetail))
+        {
+            HttpContext.Session.SetInt32(LastDetailKey, parsedDetail);
+            Devolucion.DetalleId = parsedDetail;
+        }
+    }
+
+    private int? ReadSessionInt(string key) => HttpContext.Session.GetInt32(key);
 
     private static string? ReadApiError(string body)
     {
@@ -197,7 +475,85 @@ public sealed class IndexModel(IHttpClientFactory httpClientFactory) : PageModel
         [DataType(DataType.Password)]
         public string Password { get; set; } = "";
     }
+
+    public sealed class ReservationInput
+    {
+        [Range(1, int.MaxValue, ErrorMessage = "Selecciona un cliente.")]
+        public int ClienteId { get; set; }
+
+        [Range(1, int.MaxValue, ErrorMessage = "Selecciona un equipo disponible.")]
+        public int EquipoId { get; set; }
+
+        [Required]
+        public string TipoReserva { get; set; } = "Walk-in";
+
+        [Required(ErrorMessage = "Indica la fecha y hora de inicio.")]
+        public DateTime FechaInicio { get; set; } = DateTime.Now.AddMinutes(-1);
+
+        [Required(ErrorMessage = "Indica la fecha y hora de fin.")]
+        public DateTime FechaFin { get; set; } = DateTime.Now.AddHours(2);
+    }
+
+    public sealed class PaymentInput
+    {
+        [Range(1, int.MaxValue, ErrorMessage = "Crea primero una reserva.")]
+        public int ReservaId { get; set; }
+
+        [Range(1, int.MaxValue, ErrorMessage = "Selecciona un método de pago.")]
+        public int MetodoPagoId { get; set; }
+
+        [PositiveMoney(ErrorMessage = "El monto debe ser mayor que cero y tener máximo dos decimales.")]
+        public decimal Monto { get; set; }
+    }
+
+    public sealed class ReturnInput
+    {
+        [Range(1, int.MaxValue, ErrorMessage = "Crea primero una reserva.")]
+        public int DetalleId { get; set; }
+
+        [Required]
+        public string Estado { get; set; } = "Bueno";
+    }
+
+    public sealed class ReservationSummary
+    {
+        [JsonPropertyName("reserva_id")] public int ReservaId { get; set; }
+        [JsonPropertyName("tipo_reserva")] public string TipoReserva { get; set; } = "";
+        [JsonPropertyName("estado")] public string Estado { get; set; } = "";
+        [JsonPropertyName("fecha_inicio")] public DateTime FechaInicio { get; set; }
+        [JsonPropertyName("fecha_fin")] public DateTime FechaFin { get; set; }
+        [JsonPropertyName("monto_final")] public decimal MontoFinal { get; set; }
+        [JsonPropertyName("cliente")] public string Cliente { get; set; } = "";
+        [JsonPropertyName("total_equipos")] public int TotalEquipos { get; set; }
+
+        public string EstadoCss => Estado switch
+        {
+            "Pendiente" => "pending",
+            "Confirmada" => "confirmed",
+            "En curso" => "active",
+            "Completada" => "complete",
+            "Cancelada" => "cancelled",
+            _ => "unknown"
+        };
+    }
+    public sealed class CustomerOption
+    {
+        [JsonPropertyName("usuario_id")] public int UsuarioId { get; set; }
+        [JsonPropertyName("nombre_completo")] public string Nombre { get; set; } = "";
+        [JsonPropertyName("email")] public string Email { get; set; } = "";
+    }
+
+    public sealed class EquipmentOption
+    {
+        [JsonPropertyName("equipo_id")] public int EquipoId { get; set; }
+        [JsonPropertyName("codigo_interno")] public string Codigo { get; set; } = "";
+        [JsonPropertyName("descripcion")] public string? Descripcion { get; set; }
+        [JsonPropertyName("categoria")] public string Categoria { get; set; } = "";
+    }
+
+    public sealed class PaymentMethodOption
+    {
+        [JsonPropertyName("metodo_pago_id")] public int MetodoPagoId { get; set; }
+        [JsonPropertyName("nombre")] public string Nombre { get; set; } = "";
+    }
 }
-
-
-
