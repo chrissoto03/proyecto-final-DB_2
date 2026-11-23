@@ -1,0 +1,24 @@
+# .NET / Visual Studio
+**/bin/
+**/obj/
+.vs/
+*.user
+*.suo
+*.cache
+
+# Node
+**/node_modules/
+**/.env
+**/.env.*
+!**/.env.example
+
+# Python
+**/__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# SQL Server / editor temporary files
+*.sqlplan.user
+*.bak
+*.trn

@@ -1,0 +1,121 @@
+@page
+@model ClienteRentaTica.Pages.IndexModel
+@{
+    Layout = null;
+}
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RentaTica | Cliente de demostración</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+<main class="shell">
+    <header class="hero">
+        <div class="brand-mark">RT</div>
+        <div>
+            <p class="eyebrow">Cliente .NET · Integración HTTP</p>
+            <h1>RentaTica</h1>
+            <p class="subtitle">Cliente de demostración conectado al API REST.</p>
+        </div>
+        <a class="api-pill" href="http://localhost:3000/docs" target="_blank" rel="noreferrer">Abrir Swagger</a>
+    </header>
+
+    @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+    {
+        <div class="notice success" role="status">@Model.StatusMessage</div>
+    }
+    @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+    {
+        <div class="notice error" role="alert">@Model.ErrorMessage</div>
+    }
+
+    @if (!Model.IsAuthenticated)
+    {
+        <section class="card login-card">
+            <div class="section-heading">
+                <span class="step">01</span>
+                <div>
+                    <h2>Iniciar sesión</h2>
+                    <p>El API valida las credenciales y entrega el token JWT.</p>
+                </div>
+            </div>
+            <form method="post" asp-page-handler="Login" class="form-grid">
+                <div asp-validation-summary="ModelOnly" class="validation"></div>
+                <label asp-for="Input.Email">Correo electrónico</label>
+                <input asp-for="Input.Email" autocomplete="username" placeholder="operador@negocio.test" />
+                <span asp-validation-for="Input.Email" class="validation"></span>
+
+                <label asp-for="Input.Password">Contraseña</label>
+                <input asp-for="Input.Password" autocomplete="current-password" />
+                <span asp-validation-for="Input.Password" class="validation"></span>
+
+                <button class="button primary" type="submit">Entrar al sistema</button>
+            </form>
+            <p class="hint">Usa las credenciales temporales que prepara <code>pruebas_api_preparar.sql</code>.</p>
+        </section>
+    }
+    else
+    {
+        <section class="card welcome">
+            <div>
+                <p class="eyebrow">Sesión autenticada</p>
+                <h2>Hola, @Model.DisplayName</h2>
+                <p>@Model.DisplayEmail · @Model.DisplayRole</p>
+            </div>
+            <form method="post" asp-page-handler="Logout">
+                <button class="button ghost" type="submit">Cerrar sesión</button>
+            </form>
+        </section>
+
+        <section class="actions">
+            <article class="card action-card">
+                <span class="step">02</span>
+                <h2>Consultar inventario</h2>
+                <p>Envía el estado solicitado al endpoint protegido de equipos.</p>
+                <form method="post" asp-page-handler="Equipos" class="inline-form">
+                    <label asp-for="Estado">Estado</label>
+                    <select asp-for="Estado">
+                        <option>Disponible</option>
+                        <option>Reservado</option>
+                        <option>Alquilado</option>
+                        <option>Mantenimiento</option>
+                        <option>Averiado</option>
+                        <option>Fuera de servicio</option>
+                    </select>
+                    <button class="button primary" type="submit">Consultar equipos</button>
+                </form>
+            </article>
+
+            <article class="card action-card">
+                <span class="step">03</span>
+                <h2>Reporte por categoría</h2>
+                <p>Solicita el resumen del inventario del negocio autenticado.</p>
+                <form method="post" asp-page-handler="ReporteInventario">
+                    <button class="button secondary" type="submit">Ver reporte</button>
+                </form>
+            </article>
+        </section>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(Model.ResponseJson))
+    {
+        <section class="card response">
+            <div class="section-heading">
+                <span class="step">JSON</span>
+                <div>
+                    <h2>Respuesta del API</h2>
+                    <p>El cliente presenta la respuesta recibida del servicio.</p>
+                </div>
+            </div>
+            <pre><code>@Model.ResponseJson</code></pre>
+        </section>
+    }
+
+    <footer>RentaTica · Cliente de demostración para R4</footer>
+</main>
+</body>
+</html>
+

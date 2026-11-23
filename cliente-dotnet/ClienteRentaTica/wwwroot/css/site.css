@@ -1,0 +1,97 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap');
+
+:root {
+  color-scheme: light;
+  --ink: #152521;
+  --muted: #61736c;
+  --paper: #f3f7f4;
+  --card: #ffffff;
+  --line: #dce7e0;
+  --green: #14795d;
+  --green-dark: #0c5f49;
+  --mint: #e3f4ec;
+  --red-bg: #fff0ec;
+  --red: #9d3829;
+  font-family: "DM Sans", "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  color: var(--ink);
+  background: radial-gradient(circle at 10% 4%, #e2f2e9 0, transparent 30rem), var(--paper);
+}
+button, input, select { font: inherit; }
+.shell { width: min(1080px, calc(100% - 36px)); margin: 48px auto; }
+.hero { display: flex; align-items: center; gap: 18px; margin-bottom: 28px; }
+.brand-mark {
+  display: grid; place-items: center; width: 54px; height: 54px; border-radius: 17px;
+  background: var(--green); color: white; font: 800 16px "Manrope", sans-serif;
+}
+.eyebrow {
+  margin: 0 0 5px; color: var(--green); font-size: 12px; font-weight: 700;
+  letter-spacing: .12em; text-transform: uppercase;
+}
+h1, h2 { font-family: "Manrope", "Segoe UI", sans-serif; }
+h1 { margin: 0; font-size: 30px; letter-spacing: -.04em; }
+.subtitle { margin: 5px 0 0; color: var(--muted); }
+.api-pill {
+  margin-left: auto; padding: 9px 13px; border: 1px solid var(--line); border-radius: 999px;
+  color: var(--muted); background: rgba(255,255,255,.7); font-size: 12px; text-decoration: none;
+}
+.card {
+  border: 1px solid var(--line); border-radius: 20px; padding: 26px;
+  background: var(--card); box-shadow: 0 14px 45px rgba(20,54,39,.055);
+}
+.login-card { max-width: 620px; }
+.section-heading { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
+.section-heading h2, .action-card h2, .welcome h2 { margin: 0 0 5px; font-size: 20px; }
+.section-heading p, .action-card p, .welcome p { margin: 0; color: var(--muted); }
+.step {
+  display: inline-grid; place-items: center; min-width: 38px; height: 34px; padding: 0 8px;
+  border-radius: 11px; background: var(--mint); color: var(--green-dark);
+  font-size: 12px; font-weight: 800; letter-spacing: .04em;
+}
+.form-grid, .inline-form { display: grid; gap: 10px; }
+label { font-size: 13px; font-weight: 700; }
+input, select {
+  width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid var(--line);
+  border-radius: 10px; color: var(--ink); background: white;
+}
+input:focus, select:focus { outline: 3px solid rgba(20,121,93,.15); border-color: var(--green); }
+.button {
+  display: inline-flex; justify-content: center; align-items: center; min-height: 42px;
+  border: 0; border-radius: 10px; padding: 10px 16px; font-weight: 700; cursor: pointer;
+}
+.button.primary { color: white; background: var(--green); }
+.button.primary:hover { background: var(--green-dark); }
+.button.secondary { color: white; background: #294c42; }
+.button.ghost { color: var(--green-dark); background: var(--mint); }
+.hint { margin: 16px 0 0; color: var(--muted); font-size: 13px; }
+code { color: var(--green-dark); }
+.notice { padding: 13px 16px; margin: 0 0 18px; border-radius: 12px; font-size: 14px; }
+.notice.success { color: var(--green-dark); background: var(--mint); }
+.notice.error { color: var(--red); background: var(--red-bg); }
+.validation { color: var(--red); font-size: 12px; }
+.welcome {
+  display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 20px;
+}
+.actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 18px; }
+.action-card .step { margin-bottom: 16px; }
+.action-card h2 { margin-bottom: 8px; }
+.action-card p { min-height: 42px; margin-bottom: 16px; line-height: 1.5; }
+.response { margin-top: 20px; }
+pre {
+  overflow: auto; max-height: 480px; margin: 0; padding: 18px; border-radius: 13px;
+  color: #d9eee5; background: #13231e; font: 13px/1.55 Consolas, "Courier New", monospace;
+}
+pre code { color: inherit; }
+footer { padding: 28px 4px 0; color: var(--muted); font-size: 12px; }
+@media (max-width: 680px) {
+  .shell { margin: 24px auto; }
+  .hero { align-items: flex-start; flex-wrap: wrap; }
+  .api-pill { margin-left: 72px; }
+  .actions { grid-template-columns: 1fr; }
+  .welcome { align-items: flex-start; flex-direction: column; }
+  .card { padding: 20px; }
+}
+
