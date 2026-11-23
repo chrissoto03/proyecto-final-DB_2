@@ -17,6 +17,7 @@ DECLARE @hasta DATE = CONVERT(DATE, GETDATE());
 SELECT TOP (1) @negocio_id = n.negocio_id
 FROM renta.Negocio AS n
 ORDER BY
+    CASE WHEN n.email_contacto = 'r4-benchmark@prueba.test' THEN 0 ELSE 1 END,
     (SELECT COUNT_BIG(*)
      FROM renta.CategoriaEquipo AS c
      INNER JOIN renta.Equipo AS e ON e.categoria_id = c.categoria_id
@@ -33,7 +34,8 @@ IF @negocio_id IS NULL
 PRINT 'R4 - LINEA BASE ANTES DE OPTIMIZAR';
 PRINT 'negocio_id seleccionado:';
 PRINT @negocio_id;
-PRINT 'Fechas del reporte de ingresos: ultimos 90 dias hasta hoy.';
+PRINT 'Ventana del reporte de ingresos (inclusive):';
+SELECT @negocio_id AS negocio_id, @desde AS fecha_desde, @hasta AS fecha_hasta;
 
 SET STATISTICS IO ON;
 SET STATISTICS TIME ON;
@@ -60,5 +62,7 @@ EXEC renta.usp_Reporte_IngresosPorDia
 SET STATISTICS TIME OFF;
 SET STATISTICS IO OFF;
 GO
+
+
 
 

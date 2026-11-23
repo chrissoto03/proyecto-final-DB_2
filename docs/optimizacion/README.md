@@ -2,29 +2,23 @@
 
 ## Estado
 
-La captura de línea base debe ejecutarse en la instancia de SQL Server del equipo antes de crear o modificar índices. El script `database/07_optimization/01_capturar_planes_antes.sql` solo ejecuta consultas existentes, activa el plan real y registra IO/tiempo; no modifica datos ni objetos.
+La captura de línea base debe ejecutarse en la instancia de SQL Server del equipo antes de crear o modificar índices. El script `database/07_optimization/01_capturar_planes_antes.sql` solo ejecuta consultas existentes y registra IO/tiempo; no modifica datos ni objetos. Activa el plan real desde SSMS con `Ctrl+M`.
 
 No se deben inventar costos ni declarar optimizaciones como medidas sin conservar los XML de SSMS y los mensajes de `STATISTICS IO/TIME`.
 
 ## Captura en SSMS
 
 1. Conecta a `CCC\MSSQLSERVER01` usando autenticación de Windows y selecciona `RentaTicaDB`.
-2. Abre el script `database/07_optimization/01_capturar_planes_antes.sql`.
-3. Activa **Incluir plan de ejecución real** con `Ctrl+M`.
-4. Ejecuta el archivo completo. Guarda cada XML de plan real en `docs/optimizacion/antes/` con estos nombres:
-   - `01_inventario_antes.sqlplan` para `renta.usp_Equipo_ListarPorEstado`.
-   - `02_reservas_proximas_antes.sqlplan` para `renta.usp_Reserva_Proximas`.
-   - `03_ingresos_antes.sqlplan` para `renta.usp_Reporte_IngresosPorDia`.
-5. Copia los mensajes de IO y tiempo de cada ejecución a `docs/optimizacion/antes/estadisticas.txt`. Guarda también el `negocio_id` seleccionado y las fechas impresas.
-6. Ejecuta el analizador Python descrito abajo para obtener un resumen comparable.
-
-Para guardar un plan en SSMS, selecciona el plan de la consulta correspondiente, clic derecho y **Guardar plan de ejecución como...**. No guardes un solo plan combinado bajo los tres nombres.
-
+2. Ejecuta una sola vez `database/05_tests/11_preparar_escenario_rendimiento.sql`. Crea un negocio temporal aislado con 250 equipos, 40 reservas y 40 pagos. Si lo ejecutas de nuevo, reemplaza solo su propio escenario; no lo repitas entre capturas.
+3. Abre el script `database/07_optimization/01_capturar_planes_antes.sql`.
+4. Activa **Incluir plan de ejecución real** con `Ctrl+M`.
+5. Ejecuta el archivo completo. Para guardar el plan combinado, clic derecho en el diagrama de **Plan de ejecución** y guarda como `docs/optimizacion/antes/00_linea_base_completa.sqlplan`.
+6. Copia los mensajes de IO y tiempo a `docs/optimizacion/antes/estadisticas.txt`. Conserva el `negocio_id` y el rango de fechas que devuelve el SELECT de parámetros.
 ## Optimización y captura posterior
 
-Después de revisar los planes y cardinalidades, documenta el diagnóstico y la decisión en `docs/optimizacion/resultado.md`. Solo entonces crea índices u otros cambios justificados, con scripts versionados en `database/07_optimization/` y comentarios sobre sus columnas clave, filtros y consultas que soportan. Evita índices duplicados o recomendaciones automáticas sin validación.
+El análisis del plan base quedó en `docs/optimizacion/resultado.md`. Ejecuta `database/07_optimization/02_aplicar_indices_r4.sql` para crear los índices candidatos documentados; el script verifica los nombres antes de crearlos y no modifica datos. Guarda el listado que devuelve. La primera medición mostró que el índice filtrado de pagos no reduce lecturas; ejecuta `database/07_optimization/05_retirar_indice_pago_r4.sql` para retirarlo antes de la captura final. Luego confirma que quedan cuatro índices.
 
-Repite exactamente las mismas consultas, negocio, fechas y estados con `database/07_optimization/02_capturar_planes_despues.sql` cuando ese archivo se prepare tras el análisis. Guarda los XML en `docs/optimizacion/despues/` conservando las etiquetas `01`, `02` y `03`, y agrega IO/tiempo a `docs/optimizacion/despues/estadisticas.txt`. El documento final debe comparar operadores, lecturas lógicas, duración y costo estimado; el costo estimado del plan no representa milisegundos ni una medición de tiempo.
+Repite exactamente las mismas consultas, negocio, fechas y estados con `database/07_optimization/03_capturar_planes_despues.sql` después de aplicar los índices y retirar el índice de pagos. Guarda la captura final como `docs/optimizacion/despues/04_planes_despues_final.sqlplan` y sus mensajes en `docs/optimizacion/despues/04_estadisticas_despues_final.txt`. Conserva también los archivos de la primera medición con cinco índices para documentar por qué se retiró el de pagos. La comparación medida está documentada en `docs/optimizacion/resultado.md`. Los costos estimados no representan milisegundos; los tiempos transcurridos deben compararse solo con estado de caché equivalente.
 
 ## Analizador de planes
 
@@ -42,4 +36,14 @@ El segundo directorio puede omitirse durante la línea base. El programa genera 
 - `usp_Reserva_Proximas`: agenda próxima; filtra reservas por negocio, estado y fechas, y consulta detalles relacionados.
 - `usp_Reporte_IngresosPorDia`: reporte de pagos completados por negocio y periodo, con agregación diaria.
 
-La selección es una hipótesis de trabajo por su función y filtros; el diagnóstico definitivo se basará en los planes capturados y el volumen real de datos.
+La selección es una hipótesis de trabajo por su función y filtros. El script de preparación crea un volumen sintético y aislado; el diagnóstico documentará que la comparación corresponde a ese escenario de prueba.
+
+Después de terminar y revisar las capturas, limpia únicamente los datos temporales ejecutando database/05_tests/12_limpiar_escenario_rendimiento.sql. No ejecutes la limpieza antes de guardar los planes y estadísticas.
+
+
+
+
+
+
+
+

@@ -1,0 +1,30 @@
+R4 - Línea base anterior a optimización
+Fuente: mensajes de SSMS compartidos por el usuario.
+Fecha de ejecución: 2026-11-23 (según Completion time de SSMS).
+Negocio elegido: 16 (escenario r4-benchmark).
+Rango de ingresos: 2026-08-25 a 2026-11-23 inclusive (calculado por la expresión del script: hoy menos 90 días hasta hoy).
+Estado consultado para inventario: Disponible. Horizonte de reservas: 30 días.
+
+PLAN 01 - renta.usp_Equipo_ListarPorEstado
+- CategoriaEquipo: scan count 0; logical reads 420; physical reads 0.
+- Equipo: scan count 1; logical reads 5; physical reads 0.
+- Worktable: scan count 0; logical reads 0; physical reads 0.
+- STATISTICS TIME muestra parse/compile CPU 15 ms, elapsed 16 ms; tiempos de ejecución reportados incluyen 178 ms y 196 ms en distintos niveles/segmentos del SP. Se conservan como reportados, no se atribuyen como una única duración del procedimiento.
+
+PLAN 02 - renta.usp_Reserva_Proximas
+- DetalleReserva: scan count 40; logical reads 80; physical reads 0.
+- Usuario: scan count 0; logical reads 80; physical reads 0.
+- Reserva: scan count 1; logical reads 2; physical reads 0.
+- Worktable: scan count 0; logical reads 0; physical reads 0.
+- STATISTICS TIME muestra parse/compile CPU 30 ms, elapsed 30 ms; ejecución reportada incluye CPU 47 ms, elapsed 35 ms en el reporte final del bloque y otras medidas internas.
+
+PLAN 03 - renta.usp_Reporte_IngresosPorDia
+- Reserva: scan count 0; logical reads 80; physical reads 0.
+- Pago: scan count 1; logical reads 2; physical reads 0.
+- Worktable: scan count 0; logical reads 0; physical reads 0.
+- STATISTICS TIME muestra parse/compile elapsed 43 ms; ejecución reportada incluye CPU 0 ms, elapsed 87 ms en el reporte final del bloque.
+
+Notas:
+- Todas las lecturas físicas reportadas fueron 0; lecturas lógicas reflejan páginas atendidas desde la memoria caché de SQL Server.
+- SQL Server imprime varias líneas de tiempo por las sentencias internas y externas de los procedimientos. No se debe comparar una línea interna como si fuera siempre el total del EXEC.
+- Este archivo resume solo las estadísticas copiadas del panel Messages. Faltan los XML de planes reales (.sqlplan), necesarios para revisar operadores y estimaciones.

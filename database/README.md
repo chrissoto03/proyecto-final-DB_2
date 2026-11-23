@@ -14,9 +14,10 @@ negocio vive en funciones y procedimientos almacenados.
 - `03_procedures/<Entidad>/transactions/`: los procedimientos con
   transacciones explícitas, separados por entidad.
 - `04_triggers/<Entidad>/`: un archivo por trigger.
-- `05_tests/`: pruebas por avance y escenarios de integración.
+- `05_tests/`: pruebas por avance, escenarios de integración y datos temporales de rendimiento R4 (`11_preparar_escenario_rendimiento.sql` / `12_limpiar_escenario_rendimiento.sql`).
 - `06_validation/01_verificar_inventario_objetos.sql`: compara el inventario
   fuente con los objetos instalados en SQL Server.
+- `07_optimization/`: captura de planes antes/después, índices R4 y reversión de índices candidatos. Orden de ejecución: `docs/optimizacion/README.md`.
 - Los archivos combinados que quedaron en la raíz de las carpetas numeradas son
   avisos obsoletos, sin definiciones SQL. No ejecutarlos.
 
@@ -79,3 +80,7 @@ Las pruebas `02` a `10` cubren catálogos, funciones, autenticación, usuarios,
 equipos, reservas, transacciones, reportes y triggers. El inventario SQL de
 verificación es independiente de las pruebas funcionales y sirve para detectar
 objetos faltantes o inesperados en `renta`.
+
+
+
+

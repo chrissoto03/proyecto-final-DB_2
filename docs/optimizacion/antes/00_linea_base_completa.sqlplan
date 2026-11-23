@@ -1,0 +1,1263 @@
+<?xml version="1.0" encoding="utf-16"?>
+<ShowPlanXML xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Version="1.599" Build="17.0.1000.7" xmlns="http://schemas.microsoft.com/sqlserver/2004/07/showplan">
+  <BatchSequence>
+    <Batch>
+      <Statements>
+        <StmtSimple StatementCompId="4" StatementEstRows="1" StatementId="1" StatementOptmLevel="FULL" StatementOptmEarlyAbortReason="GoodEnoughPlanFound" CardinalityEstimationModelVersion="170" StatementSubTreeCost="0.0246012" StatementText="SELECT TOP (1) @negocio_id = n.negocio_id&#xD;&#xA;FROM renta.Negocio AS n&#xD;&#xA;ORDER BY&#xD;&#xA;    CASE WHEN n.email_contacto = 'r4-benchmark@prueba.test' THEN 0 ELSE 1 END,&#xD;&#xA;    (SELECT COUNT_BIG(*)&#xD;&#xA;     FROM renta.CategoriaEquipo AS c&#xD;&#xA;     INNER JOIN renta.Equipo AS e ON e.categoria_id = c.categoria_id&#xD;&#xA;     WHERE c.negocio_id = n.negocio_id)&#xD;&#xA;    +&#xD;&#xA;    (SELECT COUNT_BIG(*)&#xD;&#xA;     FROM renta.Reserva AS r&#xD;&#xA;     WHERE r.negocio_id = n.negocio_id) DESC,&#xD;&#xA;    n.negocio_id" StatementType="SELECT" QueryHash="0xAB7514606E2398FC" QueryPlanHash="0x756CAC347B2835FB" RetrievedFromCache="true" StatementSqlHandle="0x0900E1D2948372EDBC4CFC73FD5DF4F47FE90000000000000000000000000000000000000000000000000000" DatabaseContextSettingsId="2" ParentObjectId="0" StatementParameterizationType="0" SecurityPolicyApplied="false">
+          <StatementSetOptions ANSI_NULLS="true" ANSI_PADDING="true" ANSI_WARNINGS="true" ARITHABORT="true" CONCAT_NULL_YIELDS_NULL="true" NUMERIC_ROUNDABORT="false" QUOTED_IDENTIFIER="true" />
+          <QueryPlan DegreeOfParallelism="1" MemoryGrant="1024" CachedPlanSize="48" CompileTime="59" CompileCPU="50" CompileMemory="824">
+            <MemoryGrantInfo SerialRequiredMemory="16" SerialDesiredMemory="24" RequiredMemory="16" DesiredMemory="24" RequestedMemory="1024" GrantWaitTime="0" GrantedMemory="1024" MaxUsedMemory="0" MaxQueryMemory="198024" LastRequestedMemory="0" IsMemoryGrantFeedbackAdjusted="No: First Execution" />
+            <OptimizerHardwareDependentProperties EstimatedAvailableMemoryGrant="101537" EstimatedPagesCached="50768" EstimatedAvailableDegreeOfParallelism="4" MaxCompileMemory="513936" />
+            <OptimizerStatsUsage>
+              <StatisticsInfo Database="[RentaTicaDB]" Schema="[renta]" Table="[Negocio]" Statistics="[PK__Negocio__7603946879C3E03E]" ModificationCount="32" SamplingPercent="100" LastUpdate="2026-10-19T17:44:46.77" />
+              <StatisticsInfo Database="[RentaTicaDB]" Schema="[renta]" Table="[CategoriaEquipo]" Statistics="[_WA_Sys_00000002_59FA5E80]" ModificationCount="28" SamplingPercent="100" LastUpdate="2026-10-19T18:00:28.27" />
+              <StatisticsInfo Database="[RentaTicaDB]" Schema="[renta]" Table="[Equipo]" Statistics="[UQ_Equipo_codigo]" ModificationCount="0" SamplingPercent="100" LastUpdate="2026-11-23T11:23:11.31" />
+              <StatisticsInfo Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Statistics="[_WA_Sys_00000002_656C112C]" ModificationCount="137" SamplingPercent="100" LastUpdate="2026-10-19T17:54:33.94" />
+              <StatisticsInfo Database="[RentaTicaDB]" Schema="[renta]" Table="[CategoriaEquipo]" Statistics="[PK__Categori__DB875A4FD008D047]" ModificationCount="26" SamplingPercent="100" LastUpdate="2026-10-19T18:00:28.28" />
+            </OptimizerStatsUsage>
+            <WaitStats>
+              <Wait WaitType="PAGEIOLATCH_SH" WaitTimeMs="1" WaitCount="4" />
+            </WaitStats>
+            <QueryTimeStats CpuTime="3" ElapsedTime="4" />
+            <RelOp AvgRowSize="23" EstimateCPU="0.000126277" EstimateIO="0.0112613" EstimateRebinds="0" EstimateRewinds="0" EstimatedExecutionMode="Row" EstimateRows="1" EstimateRowsWithoutRowGoal="6.32456" LogicalOp="TopN Sort" NodeId="0" Parallel="false" PhysicalOp="Sort" EstimatedTotalSubtreeCost="0.0246012">
+              <OutputList>
+                <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Negocio]" Alias="[n]" Column="negocio_id" />
+                <ColumnReference Column="Expr1001" />
+                <ColumnReference Column="Expr1009" />
+              </OutputList>
+              <MemoryFractions Input="1" Output="1" />
+              <RunTimeInformation>
+                <RunTimeCountersPerThread Thread="0" ActualRebinds="1" ActualRewinds="0" ActualRows="1" Batches="0" ActualEndOfScans="1" ActualExecutions="1" ActualExecutionMode="Row" ActualElapsedms="3" ActualCPUms="1" ActualScans="0" ActualLogicalReads="0" ActualPhysicalReads="0" ActualReadAheads="0" ActualLobLogicalReads="0" ActualLobPhysicalReads="0" ActualLobReadAheads="0" InputMemoryGrant="1024" OutputMemoryGrant="1024" UsedMemoryGrant="0" />
+              </RunTimeInformation>
+              <TopSort Distinct="false" Rows="1">
+                <OrderBy>
+                  <OrderByColumn Ascending="true">
+                    <ColumnReference Column="Expr1001" />
+                  </OrderByColumn>
+                  <OrderByColumn Ascending="false">
+                    <ColumnReference Column="Expr1009" />
+                  </OrderByColumn>
+                  <OrderByColumn Ascending="true">
+                    <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Negocio]" Alias="[n]" Column="negocio_id" />
+                  </OrderByColumn>
+                </OrderBy>
+                <RelOp AvgRowSize="23" EstimateCPU="6.32456E-07" EstimateIO="0" EstimateRebinds="0" EstimateRewinds="0" EstimatedExecutionMode="Row" EstimateRows="6.32456" EstimateRowsWithoutRowGoal="6.32456" LogicalOp="Compute Scalar" NodeId="1" Parallel="false" PhysicalOp="Compute Scalar" EstimatedTotalSubtreeCost="0.0132136">
+                  <OutputList>
+                    <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Negocio]" Alias="[n]" Column="negocio_id" />
+                    <ColumnReference Column="Expr1001" />
+                    <ColumnReference Column="Expr1009" />
+                  </OutputList>
+                  <ComputeScalar>
+                    <DefinedValues>
+                      <DefinedValue>
+                        <ColumnReference Column="Expr1009" />
+                        <ScalarOperator ScalarString="CASE WHEN [Expr1004] IS NULL THEN (0) ELSE [Expr1004] END+CASE WHEN [Expr1007] IS NULL THEN (0) ELSE [Expr1007] END">
+                          <Arithmetic Operation="ADD">
+                            <ScalarOperator>
+                              <IF>
+                                <Condition>
+                                  <ScalarOperator>
+                                    <Logical Operation="IS NULL">
+                                      <ScalarOperator>
+                                        <Identifier>
+                                          <ColumnReference Column="Expr1004" />
+                                        </Identifier>
+                                      </ScalarOperator>
+                                    </Logical>
+                                  </ScalarOperator>
+                                </Condition>
+                                <Then>
+                                  <ScalarOperator>
+                                    <Const ConstValue="(0)" />
+                                  </ScalarOperator>
+                                </Then>
+                                <Else>
+                                  <ScalarOperator>
+                                    <Identifier>
+                                      <ColumnReference Column="Expr1004" />
+                                    </Identifier>
+                                  </ScalarOperator>
+                                </Else>
+                              </IF>
+                            </ScalarOperator>
+                            <ScalarOperator>
+                              <IF>
+                                <Condition>
+                                  <ScalarOperator>
+                                    <Logical Operation="IS NULL">
+                                      <ScalarOperator>
+                                        <Identifier>
+                                          <ColumnReference Column="Expr1007" />
+                                        </Identifier>
+                                      </ScalarOperator>
+                                    </Logical>
+                                  </ScalarOperator>
+                                </Condition>
+                                <Then>
+                                  <ScalarOperator>
+                                    <Const ConstValue="(0)" />
+                                  </ScalarOperator>
+                                </Then>
+                                <Else>
+                                  <ScalarOperator>
+                                    <Identifier>
+                                      <ColumnReference Column="Expr1007" />
+                                    </Identifier>
+                                  </ScalarOperator>
+                                </Else>
+                              </IF>
+                            </ScalarOperator>
+                          </Arithmetic>
+                        </ScalarOperator>
+                      </DefinedValue>
+                    </DefinedValues>
+                    <RelOp AvgRowSize="31" EstimateCPU="4.18E-06" EstimateIO="0" EstimateRebinds="0" EstimateRewinds="0" EstimatedExecutionMode="Row" EstimateRows="6.32456" LogicalOp="Left Outer Join" NodeId="2" Parallel="false" PhysicalOp="Nested Loops" EstimatedTotalSubtreeCost="0.013213">
+                      <OutputList>
+                        <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Negocio]" Alias="[n]" Column="negocio_id" />
+                        <ColumnReference Column="Expr1001" />
+                        <ColumnReference Column="Expr1004" />
+                        <ColumnReference Column="Expr1007" />
+                      </OutputList>
+                      <RunTimeInformation>
+                        <RunTimeCountersPerThread Thread="0" ActualRows="1" Batches="0" ActualEndOfScans="1" ActualExecutions="1" ActualExecutionMode="Row" ActualElapsedms="3" ActualCPUms="1" />
+                      </RunTimeInformation>
+                      <NestedLoops Optimized="false">
+                        <OuterReferences>
+                          <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Negocio]" Alias="[n]" Column="negocio_id" />
+                        </OuterReferences>
+                        <RelOp AvgRowSize="23" EstimateCPU="4.18E-06" EstimateIO="0" EstimateRebinds="0" EstimateRewinds="0" EstimatedExecutionMode="Row" EstimateRows="1" LogicalOp="Left Outer Join" NodeId="3" Parallel="false" PhysicalOp="Nested Loops" EstimatedTotalSubtreeCost="0.00985934">
+                          <OutputList>
+                            <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Negocio]" Alias="[n]" Column="negocio_id" />
+                            <ColumnReference Column="Expr1001" />
+                            <ColumnReference Column="Expr1004" />
+                          </OutputList>
+                          <RunTimeInformation>
+                            <RunTimeCountersPerThread Thread="0" ActualRows="1" Batches="0" ActualEndOfScans="1" ActualExecutions="1" ActualExecutionMode="Row" ActualElapsedms="2" ActualCPUms="1" />
+                          </RunTimeInformation>
+                          <NestedLoops Optimized="false">
+                            <OuterReferences>
+                              <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Negocio]" Alias="[n]" Column="negocio_id" />
+                            </OuterReferences>
+                            <RelOp AvgRowSize="15" EstimateCPU="1E-07" EstimateIO="0" EstimateRebinds="0" EstimateRewinds="0" EstimatedExecutionMode="Row" EstimateRows="1" LogicalOp="Compute Scalar" NodeId="4" Parallel="false" PhysicalOp="Compute Scalar" EstimatedTotalSubtreeCost="0.0032832">
+                              <OutputList>
+                                <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Negocio]" Alias="[n]" Column="negocio_id" />
+                                <ColumnReference Column="Expr1001" />
+                              </OutputList>
+                              <ComputeScalar>
+                                <DefinedValues>
+                                  <DefinedValue>
+                                    <ColumnReference Column="Expr1001" />
+                                    <ScalarOperator ScalarString="CASE WHEN [RentaTicaDB].[renta].[Negocio].[email_contacto] as [n].[email_contacto]='r4-benchmark@prueba.test' THEN (0) ELSE (1) END">
+                                      <IF>
+                                        <Condition>
+                                          <ScalarOperator>
+                                            <Compare CompareOp="EQ">
+                                              <ScalarOperator>
+                                                <Identifier>
+                                                  <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Negocio]" Alias="[n]" Column="email_contacto" />
+                                                </Identifier>
+                                              </ScalarOperator>
+                                              <ScalarOperator>
+                                                <Const ConstValue="'r4-benchmark@prueba.test'" />
+                                              </ScalarOperator>
+                                            </Compare>
+                                          </ScalarOperator>
+                                        </Condition>
+                                        <Then>
+                                          <ScalarOperator>
+                                            <Const ConstValue="(0)" />
+                                          </ScalarOperator>
+                                        </Then>
+                                        <Else>
+                                          <ScalarOperator>
+                                            <Const ConstValue="(1)" />
+                                          </ScalarOperator>
+                                        </Else>
+                                      </IF>
+                                    </ScalarOperator>
+                                  </DefinedValue>
+                                </DefinedValues>
+                                <RelOp AvgRowSize="65" EstimateCPU="0.0001581" EstimateIO="0.003125" EstimateRebinds="0" EstimateRewinds="0" EstimatedExecutionMode="Row" EstimateRows="1" EstimatedRowsRead="1" LogicalOp="Clustered Index Scan" NodeId="5" Parallel="false" PhysicalOp="Clustered Index Scan" EstimatedTotalSubtreeCost="0.0032831" TableCardinality="1">
+                                  <OutputList>
+                                    <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Negocio]" Alias="[n]" Column="negocio_id" />
+                                    <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Negocio]" Alias="[n]" Column="email_contacto" />
+                                  </OutputList>
+                                  <RunTimeInformation>
+                                    <RunTimeCountersPerThread Thread="0" ActualRows="1" ActualRowsRead="1" Batches="0" ActualEndOfScans="1" ActualExecutions="1" ActualExecutionMode="Row" ActualElapsedms="1" ActualCPUms="0" ActualScans="1" ActualLogicalReads="2" ActualPhysicalReads="1" ActualReadAheads="0" ActualLobLogicalReads="0" ActualLobPhysicalReads="0" ActualLobReadAheads="0" />
+                                  </RunTimeInformation>
+                                  <IndexScan Ordered="true" ScanDirection="FORWARD" ForcedIndex="false" ForceSeek="false" ForceScan="false" NoExpandHint="false" Storage="RowStore">
+                                    <DefinedValues>
+                                      <DefinedValue>
+                                        <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Negocio]" Alias="[n]" Column="negocio_id" />
+                                      </DefinedValue>
+                                      <DefinedValue>
+                                        <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Negocio]" Alias="[n]" Column="email_contacto" />
+                                      </DefinedValue>
+                                    </DefinedValues>
+                                    <Object Database="[RentaTicaDB]" Schema="[renta]" Table="[Negocio]" Index="[PK__Negocio__7603946879C3E03E]" Alias="[n]" IndexKind="Clustered" Storage="RowStore" />
+                                  </IndexScan>
+                                </RelOp>
+                              </ComputeScalar>
+                            </RelOp>
+                            <RelOp AvgRowSize="15" EstimateCPU="1.1E-06" EstimateIO="0" EstimateRebinds="0" EstimateRewinds="0" EstimatedExecutionMode="Row" EstimateRows="1" LogicalOp="Aggregate" NodeId="6" Parallel="false" PhysicalOp="Stream Aggregate" EstimatedTotalSubtreeCost="0.00657196">
+                              <OutputList>
+                                <ColumnReference Column="Expr1004" />
+                              </OutputList>
+                              <RunTimeInformation>
+                                <RunTimeCountersPerThread Thread="0" ActualRows="1" Batches="0" ActualEndOfScans="0" ActualExecutions="1" ActualExecutionMode="Row" ActualElapsedms="1" ActualCPUms="0" />
+                              </RunTimeInformation>
+                              <StreamAggregate>
+                                <DefinedValues>
+                                  <DefinedValue>
+                                    <ColumnReference Column="Expr1004" />
+                                    <ScalarOperator ScalarString="Count(*)">
+                                      <Aggregate AggType="countstar" Distinct="false" />
+                                    </ScalarOperator>
+                                  </DefinedValue>
+                                </DefinedValues>
+                                <RelOp AvgRowSize="9" EstimateCPU="4.18E-06" EstimateIO="0" EstimateRebinds="0" EstimateRewinds="0" EstimatedExecutionMode="Row" EstimateRows="1" LogicalOp="Inner Join" NodeId="7" Parallel="false" PhysicalOp="Nested Loops" EstimatedTotalSubtreeCost="0.00657086">
+                                  <OutputList />
+                                  <RunTimeInformation>
+                                    <RunTimeCountersPerThread Thread="0" ActualRows="250" Batches="0" ActualEndOfScans="1" ActualExecutions="1" ActualExecutionMode="Row" ActualElapsedms="1" ActualCPUms="0" />
+                                  </RunTimeInformation>
+                                  <NestedLoops Optimized="false">
+                                    <OuterReferences>
+                                      <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[CategoriaEquipo]" Alias="[c]" Column="categoria_id" />
+                                    </OuterReferences>
+                                    <RelOp AvgRowSize="15" EstimateCPU="0.0001581" EstimateIO="0.003125" EstimateRebinds="0" EstimateRewinds="0" EstimatedExecutionMode="Row" EstimateRows="1" EstimatedRowsRead="1" LogicalOp="Clustered Index Scan" NodeId="8" Parallel="false" PhysicalOp="Clustered Index Scan" EstimatedTotalSubtreeCost="0.0032831" TableCardinality="1">
+                                      <OutputList>
+                                        <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[CategoriaEquipo]" Alias="[c]" Column="categoria_id" />
+                                      </OutputList>
+                                      <RunTimeInformation>
+                                        <RunTimeCountersPerThread Thread="0" ActualRows="1" ActualRowsRead="1" Batches="0" ActualEndOfScans="1" ActualExecutions="1" ActualExecutionMode="Row" ActualElapsedms="0" ActualCPUms="0" ActualScans="1" ActualLogicalReads="2" ActualPhysicalReads="1" ActualReadAheads="0" ActualLobLogicalReads="0" ActualLobPhysicalReads="0" ActualLobReadAheads="0" />
+                                      </RunTimeInformation>
+                                      <IndexScan Ordered="false" ForcedIndex="false" ForceScan="false" NoExpandHint="false" Storage="RowStore">
+                                        <DefinedValues>
+                                          <DefinedValue>
+                                            <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[CategoriaEquipo]" Alias="[c]" Column="categoria_id" />
+                                          </DefinedValue>
+                                        </DefinedValues>
+                                        <Object Database="[RentaTicaDB]" Schema="[renta]" Table="[CategoriaEquipo]" Index="[PK__Categori__DB875A4FD008D047]" Alias="[c]" IndexKind="Clustered" Storage="RowStore" />
+                                        <Predicate>
+                                          <ScalarOperator ScalarString="[RentaTicaDB].[renta].[CategoriaEquipo].[negocio_id] as [c].[negocio_id]=[RentaTicaDB].[renta].[Negocio].[negocio_id] as [n].[negocio_id]">
+                                            <Compare CompareOp="EQ">
+                                              <ScalarOperator>
+                                                <Identifier>
+                                                  <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[CategoriaEquipo]" Alias="[c]" Column="negocio_id" />
+                                                </Identifier>
+                                              </ScalarOperator>
+                                              <ScalarOperator>
+                                                <Identifier>
+                                                  <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Negocio]" Alias="[n]" Column="negocio_id" />
+                                                </Identifier>
+                                              </ScalarOperator>
+                                            </Compare>
+                                          </ScalarOperator>
+                                        </Predicate>
+                                      </IndexScan>
+                                    </RelOp>
+                                    <RelOp AvgRowSize="9" EstimateCPU="0.0001581" EstimateIO="0.003125" EstimateRebinds="0" EstimateRewinds="0" EstimatedExecutionMode="Row" EstimateRows="1" EstimatedRowsRead="1" LogicalOp="Index Seek" NodeId="9" Parallel="false" PhysicalOp="Index Seek" EstimatedTotalSubtreeCost="0.0032831" TableCardinality="250">
+                                      <OutputList />
+                                      <RunTimeInformation>
+                                        <RunTimeCountersPerThread Thread="0" ActualRows="250" ActualRowsRead="250" Batches="0" ActualEndOfScans="1" ActualExecutions="1" ActualExecutionMode="Row" ActualElapsedms="0" ActualCPUms="0" ActualScans="1" ActualLogicalReads="2" ActualPhysicalReads="1" ActualReadAheads="0" ActualLobLogicalReads="0" ActualLobPhysicalReads="0" ActualLobReadAheads="0" />
+                                      </RunTimeInformation>
+                                      <IndexScan Ordered="true" ScanDirection="FORWARD" ForcedIndex="false" ForceSeek="false" ForceScan="false" NoExpandHint="false" Storage="RowStore">
+                                        <DefinedValues />
+                                        <Object Database="[RentaTicaDB]" Schema="[renta]" Table="[Equipo]" Index="[UQ_Equipo_codigo]" Alias="[e]" IndexKind="NonClustered" Storage="RowStore" />
+                                        <SeekPredicates>
+                                          <SeekPredicateNew>
+                                            <SeekKeys>
+                                              <Prefix ScanType="EQ">
+                                                <RangeColumns>
+                                                  <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Equipo]" Alias="[e]" Column="categoria_id" />
+                                                </RangeColumns>
+                                                <RangeExpressions>
+                                                  <ScalarOperator ScalarString="[RentaTicaDB].[renta].[CategoriaEquipo].[categoria_id] as [c].[categoria_id]">
+                                                    <Identifier>
+                                                      <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[CategoriaEquipo]" Alias="[c]" Column="categoria_id" />
+                                                    </Identifier>
+                                                  </ScalarOperator>
+                                                </RangeExpressions>
+                                              </Prefix>
+                                            </SeekKeys>
+                                          </SeekPredicateNew>
+                                        </SeekPredicates>
+                                      </IndexScan>
+                                    </RelOp>
+                                  </NestedLoops>
+                                </RelOp>
+                              </StreamAggregate>
+                            </RelOp>
+                          </NestedLoops>
+                        </RelOp>
+                        <RelOp AvgRowSize="15" EstimateCPU="4.29473E-06" EstimateIO="0" EstimateRebinds="0" EstimateRewinds="0" EstimatedExecutionMode="Row" EstimateRows="1" LogicalOp="Aggregate" NodeId="10" Parallel="false" PhysicalOp="Stream Aggregate" EstimatedTotalSubtreeCost="0.00334949">
+                          <OutputList>
+                            <ColumnReference Column="Expr1007" />
+                          </OutputList>
+                          <RunTimeInformation>
+                            <RunTimeCountersPerThread Thread="0" ActualRows="1" Batches="0" ActualEndOfScans="0" ActualExecutions="1" ActualExecutionMode="Row" ActualElapsedms="0" ActualCPUms="0" />
+                          </RunTimeInformation>
+                          <StreamAggregate>
+                            <DefinedValues>
+                              <DefinedValue>
+                                <ColumnReference Column="Expr1007" />
+                                <ScalarOperator ScalarString="Count(*)">
+                                  <Aggregate AggType="countstar" Distinct="false" />
+                                </ScalarOperator>
+                              </DefinedValue>
+                            </DefinedValues>
+                            <RelOp AvgRowSize="11" EstimateCPU="0.000201" EstimateIO="0.003125" EstimateRebinds="0" EstimateRewinds="0" EstimatedExecutionMode="Row" EstimateRows="6.32456" EstimatedRowsRead="40" LogicalOp="Clustered Index Scan" NodeId="11" Parallel="false" PhysicalOp="Clustered Index Scan" EstimatedTotalSubtreeCost="0.003326" TableCardinality="40">
+                              <OutputList />
+                              <RunTimeInformation>
+                                <RunTimeCountersPerThread Thread="0" ActualRows="40" ActualRowsRead="40" Batches="0" ActualEndOfScans="1" ActualExecutions="1" ActualExecutionMode="Row" ActualElapsedms="0" ActualCPUms="0" ActualScans="1" ActualLogicalReads="2" ActualPhysicalReads="1" ActualReadAheads="0" ActualLobLogicalReads="0" ActualLobPhysicalReads="0" ActualLobReadAheads="0" />
+                              </RunTimeInformation>
+                              <IndexScan Ordered="false" ForcedIndex="false" ForceScan="false" NoExpandHint="false" Storage="RowStore">
+                                <DefinedValues />
+                                <Object Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Index="[PK__Reserva__F1437E489AAC63E8]" Alias="[r]" IndexKind="Clustered" Storage="RowStore" />
+                                <Predicate>
+                                  <ScalarOperator ScalarString="[RentaTicaDB].[renta].[Reserva].[negocio_id] as [r].[negocio_id]=[RentaTicaDB].[renta].[Negocio].[negocio_id] as [n].[negocio_id]">
+                                    <Compare CompareOp="EQ">
+                                      <ScalarOperator>
+                                        <Identifier>
+                                          <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="negocio_id" />
+                                        </Identifier>
+                                      </ScalarOperator>
+                                      <ScalarOperator>
+                                        <Identifier>
+                                          <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Negocio]" Alias="[n]" Column="negocio_id" />
+                                        </Identifier>
+                                      </ScalarOperator>
+                                    </Compare>
+                                  </ScalarOperator>
+                                </Predicate>
+                              </IndexScan>
+                            </RelOp>
+                          </StreamAggregate>
+                        </RelOp>
+                      </NestedLoops>
+                    </RelOp>
+                  </ComputeScalar>
+                </RelOp>
+              </TopSort>
+            </RelOp>
+            <ParameterList>
+              <ColumnReference Column="@negocio_id" ParameterDataType="int" ParameterRuntimeValue="(17)" />
+            </ParameterList>
+          </QueryPlan>
+        </StmtSimple>
+      </Statements>
+    </Batch>
+    <Batch>
+      <Statements>
+        <StmtSimple StatementCompId="29" StatementEstRows="1" StatementId="2" StatementOptmLevel="FULL" StatementOptmEarlyAbortReason="GoodEnoughPlanFound" CardinalityEstimationModelVersion="170" StatementSubTreeCost="0.0212201" StatementText="SELECT e.equipo_id,e.codigo_interno,e.descripcion,e.estado,c.categoria_id,c.nombre AS categoria&#xA; FROM renta.Equipo e JOIN renta.CategoriaEquipo c ON c.categoria_id=e.categoria_id&#xA; WHERE c.negocio_id=@negocio_id AND e.estado=@estado ORDER BY c.nombre,e.codigo_interno" StatementType="SELECT" QueryHash="0xC8AAAFF4E24F8479" QueryPlanHash="0xC629DE39846664FD" RetrievedFromCache="true" StatementSqlHandle="0x090065786D972D0A2D25CCA4D5FEA85663C90000000000000000000000000000000000000000000000000000" DatabaseContextSettingsId="2" ParentObjectId="1378103950" StatementParameterizationType="0" SecurityPolicyApplied="false">
+          <StatementSetOptions ANSI_NULLS="true" ANSI_PADDING="true" ANSI_WARNINGS="true" ARITHABORT="true" CONCAT_NULL_YIELDS_NULL="true" NUMERIC_ROUNDABORT="false" QUOTED_IDENTIFIER="true" />
+          <QueryPlan DegreeOfParallelism="1" MemoryGrant="1024" CachedPlanSize="48" CompileTime="9" CompileCPU="9" CompileMemory="424">
+            <MemoryGrantInfo SerialRequiredMemory="512" SerialDesiredMemory="544" RequiredMemory="512" DesiredMemory="544" RequestedMemory="1024" GrantWaitTime="0" GrantedMemory="1024" MaxUsedMemory="40" MaxQueryMemory="195552" LastRequestedMemory="0" IsMemoryGrantFeedbackAdjusted="No: First Execution" />
+            <OptimizerHardwareDependentProperties EstimatedAvailableMemoryGrant="101537" EstimatedPagesCached="50768" EstimatedAvailableDegreeOfParallelism="4" MaxCompileMemory="513936" />
+            <OptimizerStatsUsage>
+              <StatisticsInfo Database="[RentaTicaDB]" Schema="[renta]" Table="[Equipo]" Statistics="[_WA_Sys_00000005_5FB337D6]" ModificationCount="40" SamplingPercent="100" LastUpdate="2026-11-23T11:23:11.36" />
+              <StatisticsInfo Database="[RentaTicaDB]" Schema="[renta]" Table="[CategoriaEquipo]" Statistics="[_WA_Sys_00000002_59FA5E80]" ModificationCount="28" SamplingPercent="100" LastUpdate="2026-10-19T18:00:28.27" />
+              <StatisticsInfo Database="[RentaTicaDB]" Schema="[renta]" Table="[Equipo]" Statistics="[UQ_Equipo_codigo]" ModificationCount="0" SamplingPercent="100" LastUpdate="2026-11-23T11:23:11.31" />
+              <StatisticsInfo Database="[RentaTicaDB]" Schema="[renta]" Table="[CategoriaEquipo]" Statistics="[PK__Categori__DB875A4FD008D047]" ModificationCount="26" SamplingPercent="100" LastUpdate="2026-10-19T18:00:28.28" />
+            </OptimizerStatsUsage>
+            <WaitStats>
+              <Wait WaitType="ASYNC_NETWORK_IO" WaitTimeMs="2423" WaitCount="3" />
+            </WaitStats>
+            <QueryTimeStats CpuTime="5" ElapsedTime="2429" />
+            <RelOp AvgRowSize="185" EstimateCPU="0.000100185" EstimateIO="0.0112613" EstimateRebinds="0" EstimateRewinds="0" EstimatedExecutionMode="Row" EstimateRows="1" LogicalOp="Sort" NodeId="0" Parallel="false" PhysicalOp="Sort" EstimatedTotalSubtreeCost="0.0212201">
+              <OutputList>
+                <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Equipo]" Alias="[e]" Column="equipo_id" />
+                <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Equipo]" Alias="[e]" Column="codigo_interno" />
+                <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Equipo]" Alias="[e]" Column="descripcion" />
+                <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Equipo]" Alias="[e]" Column="estado" />
+                <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[CategoriaEquipo]" Alias="[c]" Column="categoria_id" />
+                <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[CategoriaEquipo]" Alias="[c]" Column="nombre" />
+              </OutputList>
+              <MemoryFractions Input="1" Output="1" />
+              <RunTimeInformation>
+                <RunTimeCountersPerThread Thread="0" ActualRebinds="1" ActualRewinds="0" ActualRows="210" Batches="0" ActualEndOfScans="1" ActualExecutions="1" ActualExecutionMode="Row" ActualElapsedms="4" ActualCPUms="4" ActualScans="0" ActualLogicalReads="0" ActualPhysicalReads="0" ActualReadAheads="0" ActualLobLogicalReads="0" ActualLobPhysicalReads="0" ActualLobReadAheads="0" InputMemoryGrant="1024" OutputMemoryGrant="640" UsedMemoryGrant="40" />
+              </RunTimeInformation>
+              <Sort Distinct="false">
+                <OrderBy>
+                  <OrderByColumn Ascending="true">
+                    <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[CategoriaEquipo]" Alias="[c]" Column="nombre" />
+                  </OrderByColumn>
+                  <OrderByColumn Ascending="true">
+                    <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Equipo]" Alias="[e]" Column="codigo_interno" />
+                  </OrderByColumn>
+                </OrderBy>
+                <RelOp AvgRowSize="185" EstimateCPU="4.18E-06" EstimateIO="0" EstimateRebinds="0" EstimateRewinds="0" EstimatedExecutionMode="Row" EstimateRows="1" LogicalOp="Inner Join" NodeId="1" Parallel="false" PhysicalOp="Nested Loops" EstimatedTotalSubtreeCost="0.00985814">
+                  <OutputList>
+                    <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Equipo]" Alias="[e]" Column="equipo_id" />
+                    <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Equipo]" Alias="[e]" Column="codigo_interno" />
+                    <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Equipo]" Alias="[e]" Column="descripcion" />
+                    <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Equipo]" Alias="[e]" Column="estado" />
+                    <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[CategoriaEquipo]" Alias="[c]" Column="categoria_id" />
+                    <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[CategoriaEquipo]" Alias="[c]" Column="nombre" />
+                  </OutputList>
+                  <RunTimeInformation>
+                    <RunTimeCountersPerThread Thread="0" ActualRows="210" Batches="0" ActualEndOfScans="1" ActualExecutions="1" ActualExecutionMode="Row" ActualElapsedms="3" ActualCPUms="3" />
+                  </RunTimeInformation>
+                  <NestedLoops Optimized="false">
+                    <OuterReferences>
+                      <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Equipo]" Alias="[e]" Column="equipo_id" />
+                    </OuterReferences>
+                    <RelOp AvgRowSize="71" EstimateCPU="4.18E-06" EstimateIO="0" EstimateRebinds="0" EstimateRewinds="0" EstimatedExecutionMode="Row" EstimateRows="1" LogicalOp="Inner Join" NodeId="2" Parallel="false" PhysicalOp="Nested Loops" EstimatedTotalSubtreeCost="0.00657086">
+                      <OutputList>
+                        <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Equipo]" Alias="[e]" Column="equipo_id" />
+                        <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Equipo]" Alias="[e]" Column="codigo_interno" />
+                        <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[CategoriaEquipo]" Alias="[c]" Column="categoria_id" />
+                        <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[CategoriaEquipo]" Alias="[c]" Column="nombre" />
+                      </OutputList>
+                      <RunTimeInformation>
+                        <RunTimeCountersPerThread Thread="0" ActualRows="250" Batches="0" ActualEndOfScans="1" ActualExecutions="1" ActualExecutionMode="Row" ActualElapsedms="1" ActualCPUms="1" />
+                      </RunTimeInformation>
+                      <NestedLoops Optimized="false">
+                        <OuterReferences>
+                          <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[CategoriaEquipo]" Alias="[c]" Column="categoria_id" />
+                        </OuterReferences>
+                        <RelOp AvgRowSize="59" EstimateCPU="0.0001581" EstimateIO="0.003125" EstimateRebinds="0" EstimateRewinds="0" EstimatedExecutionMode="Row" EstimateRows="1" EstimatedRowsRead="1" LogicalOp="Clustered Index Scan" NodeId="3" Parallel="false" PhysicalOp="Clustered Index Scan" EstimatedTotalSubtreeCost="0.0032831" TableCardinality="1">
+                          <OutputList>
+                            <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[CategoriaEquipo]" Alias="[c]" Column="categoria_id" />
+                            <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[CategoriaEquipo]" Alias="[c]" Column="nombre" />
+                          </OutputList>
+                          <RunTimeInformation>
+                            <RunTimeCountersPerThread Thread="0" ActualRows="1" ActualRowsRead="1" Batches="0" ActualEndOfScans="1" ActualExecutions="1" ActualExecutionMode="Row" ActualElapsedms="0" ActualCPUms="0" ActualScans="1" ActualLogicalReads="2" ActualPhysicalReads="0" ActualReadAheads="0" ActualLobLogicalReads="0" ActualLobPhysicalReads="0" ActualLobReadAheads="0" />
+                          </RunTimeInformation>
+                          <IndexScan Ordered="false" ForcedIndex="false" ForceScan="false" NoExpandHint="false" Storage="RowStore">
+                            <DefinedValues>
+                              <DefinedValue>
+                                <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[CategoriaEquipo]" Alias="[c]" Column="categoria_id" />
+                              </DefinedValue>
+                              <DefinedValue>
+                                <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[CategoriaEquipo]" Alias="[c]" Column="nombre" />
+                              </DefinedValue>
+                            </DefinedValues>
+                            <Object Database="[RentaTicaDB]" Schema="[renta]" Table="[CategoriaEquipo]" Index="[PK__Categori__DB875A4FD008D047]" Alias="[c]" IndexKind="Clustered" Storage="RowStore" />
+                            <Predicate>
+                              <ScalarOperator ScalarString="[RentaTicaDB].[renta].[CategoriaEquipo].[negocio_id] as [c].[negocio_id]=[@negocio_id]">
+                                <Compare CompareOp="EQ">
+                                  <ScalarOperator>
+                                    <Identifier>
+                                      <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[CategoriaEquipo]" Alias="[c]" Column="negocio_id" />
+                                    </Identifier>
+                                  </ScalarOperator>
+                                  <ScalarOperator>
+                                    <Identifier>
+                                      <ColumnReference Column="@negocio_id" />
+                                    </Identifier>
+                                  </ScalarOperator>
+                                </Compare>
+                              </ScalarOperator>
+                            </Predicate>
+                          </IndexScan>
+                        </RelOp>
+                        <RelOp AvgRowSize="25" EstimateCPU="0.0001581" EstimateIO="0.003125" EstimateRebinds="0" EstimateRewinds="0" EstimatedExecutionMode="Row" EstimateRows="1" EstimatedRowsRead="1" LogicalOp="Index Seek" NodeId="4" Parallel="false" PhysicalOp="Index Seek" EstimatedTotalSubtreeCost="0.0032831" TableCardinality="250">
+                          <OutputList>
+                            <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Equipo]" Alias="[e]" Column="equipo_id" />
+                            <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Equipo]" Alias="[e]" Column="codigo_interno" />
+                          </OutputList>
+                          <RunTimeInformation>
+                            <RunTimeCountersPerThread Thread="0" ActualRows="250" ActualRowsRead="250" Batches="0" ActualEndOfScans="1" ActualExecutions="1" ActualExecutionMode="Row" ActualElapsedms="1" ActualCPUms="1" ActualScans="1" ActualLogicalReads="2" ActualPhysicalReads="0" ActualReadAheads="0" ActualLobLogicalReads="0" ActualLobPhysicalReads="0" ActualLobReadAheads="0" />
+                          </RunTimeInformation>
+                          <IndexScan Ordered="true" ScanDirection="FORWARD" ForcedIndex="false" ForceSeek="false" ForceScan="false" NoExpandHint="false" Storage="RowStore">
+                            <DefinedValues>
+                              <DefinedValue>
+                                <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Equipo]" Alias="[e]" Column="equipo_id" />
+                              </DefinedValue>
+                              <DefinedValue>
+                                <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Equipo]" Alias="[e]" Column="codigo_interno" />
+                              </DefinedValue>
+                            </DefinedValues>
+                            <Object Database="[RentaTicaDB]" Schema="[renta]" Table="[Equipo]" Index="[UQ_Equipo_codigo]" Alias="[e]" IndexKind="NonClustered" Storage="RowStore" />
+                            <SeekPredicates>
+                              <SeekPredicateNew>
+                                <SeekKeys>
+                                  <Prefix ScanType="EQ">
+                                    <RangeColumns>
+                                      <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Equipo]" Alias="[e]" Column="categoria_id" />
+                                    </RangeColumns>
+                                    <RangeExpressions>
+                                      <ScalarOperator ScalarString="[RentaTicaDB].[renta].[CategoriaEquipo].[categoria_id] as [c].[categoria_id]">
+                                        <Identifier>
+                                          <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[CategoriaEquipo]" Alias="[c]" Column="categoria_id" />
+                                        </Identifier>
+                                      </ScalarOperator>
+                                    </RangeExpressions>
+                                  </Prefix>
+                                </SeekKeys>
+                              </SeekPredicateNew>
+                            </SeekPredicates>
+                          </IndexScan>
+                        </RelOp>
+                      </NestedLoops>
+                    </RelOp>
+                    <RelOp AvgRowSize="123" EstimateCPU="0.0001581" EstimateIO="0.003125" EstimateRebinds="0" EstimateRewinds="0" EstimatedExecutionMode="Row" EstimateRows="1" LogicalOp="Clustered Index Seek" NodeId="6" Parallel="false" PhysicalOp="Clustered Index Seek" EstimatedTotalSubtreeCost="0.0032831" TableCardinality="250">
+                      <OutputList>
+                        <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Equipo]" Alias="[e]" Column="descripcion" />
+                        <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Equipo]" Alias="[e]" Column="estado" />
+                      </OutputList>
+                      <RunTimeInformation>
+                        <RunTimeCountersPerThread Thread="0" ActualRows="210" ActualRowsRead="250" Batches="0" ActualEndOfScans="40" ActualExecutions="250" ActualExecutionMode="Row" ActualElapsedms="2" ActualCPUms="1" ActualScans="0" ActualLogicalReads="500" ActualPhysicalReads="1" ActualReadAheads="0" ActualLobLogicalReads="0" ActualLobPhysicalReads="0" ActualLobReadAheads="0" />
+                      </RunTimeInformation>
+                      <IndexScan Lookup="true" Ordered="true" ScanDirection="FORWARD" ForcedIndex="false" ForceSeek="false" ForceScan="false" NoExpandHint="false" Storage="RowStore">
+                        <DefinedValues>
+                          <DefinedValue>
+                            <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Equipo]" Alias="[e]" Column="descripcion" />
+                          </DefinedValue>
+                          <DefinedValue>
+                            <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Equipo]" Alias="[e]" Column="estado" />
+                          </DefinedValue>
+                        </DefinedValues>
+                        <Object Database="[RentaTicaDB]" Schema="[renta]" Table="[Equipo]" Index="[PK__Equipo__50EAD2BF0EE78CD0]" Alias="[e]" TableReferenceId="-1" IndexKind="Clustered" Storage="RowStore" />
+                        <SeekPredicates>
+                          <SeekPredicateNew>
+                            <SeekKeys>
+                              <Prefix ScanType="EQ">
+                                <RangeColumns>
+                                  <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Equipo]" Alias="[e]" Column="equipo_id" />
+                                </RangeColumns>
+                                <RangeExpressions>
+                                  <ScalarOperator ScalarString="[RentaTicaDB].[renta].[Equipo].[equipo_id] as [e].[equipo_id]">
+                                    <Identifier>
+                                      <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Equipo]" Alias="[e]" Column="equipo_id" />
+                                    </Identifier>
+                                  </ScalarOperator>
+                                </RangeExpressions>
+                              </Prefix>
+                            </SeekKeys>
+                          </SeekPredicateNew>
+                        </SeekPredicates>
+                        <Predicate>
+                          <ScalarOperator ScalarString="[RentaTicaDB].[renta].[Equipo].[estado] as [e].[estado]=[@estado]">
+                            <Compare CompareOp="EQ">
+                              <ScalarOperator>
+                                <Identifier>
+                                  <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Equipo]" Alias="[e]" Column="estado" />
+                                </Identifier>
+                              </ScalarOperator>
+                              <ScalarOperator>
+                                <Identifier>
+                                  <ColumnReference Column="@estado" />
+                                </Identifier>
+                              </ScalarOperator>
+                            </Compare>
+                          </ScalarOperator>
+                        </Predicate>
+                      </IndexScan>
+                    </RelOp>
+                  </NestedLoops>
+                </RelOp>
+              </Sort>
+            </RelOp>
+            <ParameterList>
+              <ColumnReference Column="@estado" ParameterDataType="varchar(20)" ParameterCompiledValue="'Disponible'" ParameterRuntimeValue="'Disponible'" />
+              <ColumnReference Column="@negocio_id" ParameterDataType="int" ParameterCompiledValue="(17)" ParameterRuntimeValue="(17)" />
+            </ParameterList>
+          </QueryPlan>
+        </StmtSimple>
+      </Statements>
+    </Batch>
+    <Batch>
+      <Statements>
+        <StmtSimple StatementCompId="41" StatementEstRows="6.32456" StatementId="3" StatementOptmLevel="FULL" StatementOptmEarlyAbortReason="GoodEnoughPlanFound" CardinalityEstimationModelVersion="170" StatementSubTreeCost="0.0215664" StatementText="SELECT r.reserva_id,r.estado,r.tipo_reserva,r.fecha_inicio,r.fecha_fin,u.nombre_completo AS cliente,&#xA;        (SELECT COUNT(*) FROM renta.DetalleReserva d WHERE d.reserva_id=r.reserva_id) AS equipos&#xA; FROM renta.Reserva r JOIN renta.Usuario u ON u.usuario_id=r.cliente_id&#xA; WHERE r.negocio_id=@negocio_id AND r.estado IN('Pendiente','Confirmada')&#xA;   AND r.fecha_inicio&gt;=GETDATE() AND r.fecha_inicio&lt;DATEADD(DAY,@dias+1,CONVERT(date,GETDATE()))&#xA; ORDER BY r.fecha_inicio,r.reserva_id" StatementType="SELECT" QueryHash="0x089118B17C8161AE" QueryPlanHash="0x37E3C44D841A7A23" RetrievedFromCache="true" StatementSqlHandle="0x0900A1F7E3EFF3849AE3F878644D72BB77330000000000000000000000000000000000000000000000000000" DatabaseContextSettingsId="2" ParentObjectId="1330103779" StatementParameterizationType="0" SecurityPolicyApplied="false">
+          <StatementSetOptions ANSI_NULLS="true" ANSI_PADDING="true" ANSI_WARNINGS="true" ARITHABORT="true" CONCAT_NULL_YIELDS_NULL="true" NUMERIC_ROUNDABORT="false" QUOTED_IDENTIFIER="true" />
+          <QueryPlan DegreeOfParallelism="1" MemoryGrant="1024" CachedPlanSize="56" CompileTime="23" CompileCPU="23" CompileMemory="680">
+            <MemoryGrantInfo SerialRequiredMemory="512" SerialDesiredMemory="544" RequiredMemory="512" DesiredMemory="544" RequestedMemory="1024" GrantWaitTime="0" GrantedMemory="1024" MaxUsedMemory="16" MaxQueryMemory="205488" LastRequestedMemory="0" IsMemoryGrantFeedbackAdjusted="No: First Execution" />
+            <OptimizerHardwareDependentProperties EstimatedAvailableMemoryGrant="101537" EstimatedPagesCached="50768" EstimatedAvailableDegreeOfParallelism="4" MaxCompileMemory="555816" />
+            <OptimizerStatsUsage>
+              <StatisticsInfo Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Statistics="[_WA_Sys_00000003_656C112C]" ModificationCount="137" SamplingPercent="100" LastUpdate="2026-10-19T17:54:33.89" />
+              <StatisticsInfo Database="[RentaTicaDB]" Schema="[renta]" Table="[Usuario]" Statistics="[PK__Usuario__2ED7D2AFA81DE513]" ModificationCount="38" SamplingPercent="100" LastUpdate="2026-10-19T17:54:33.34" />
+              <StatisticsInfo Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Statistics="[_WA_Sys_00000007_656C112C]" ModificationCount="135" SamplingPercent="100" LastUpdate="2026-10-19T18:00:28.59" />
+              <StatisticsInfo Database="[RentaTicaDB]" Schema="[renta]" Table="[DetalleReserva]" Statistics="[_WA_Sys_00000002_70DDC3D8]" ModificationCount="133" SamplingPercent="100" LastUpdate="2026-10-19T18:00:28.59" />
+              <StatisticsInfo Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Statistics="[_WA_Sys_00000009_656C112C]" ModificationCount="216" SamplingPercent="100" LastUpdate="2026-10-19T18:00:28.58" />
+              <StatisticsInfo Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Statistics="[_WA_Sys_00000002_656C112C]" ModificationCount="137" SamplingPercent="100" LastUpdate="2026-10-19T17:54:33.94" />
+              <StatisticsInfo Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Statistics="[PK__Reserva__F1437E489AAC63E8]" ModificationCount="135" SamplingPercent="100" LastUpdate="2026-10-19T18:00:28.6" />
+            </OptimizerStatsUsage>
+            <WaitStats>
+              <Wait WaitType="PAGEIOLATCH_SH" WaitTimeMs="1" WaitCount="2" />
+            </WaitStats>
+            <QueryTimeStats CpuTime="2" ElapsedTime="3" />
+            <RelOp AvgRowSize="109" EstimateCPU="6.32456E-07" EstimateIO="0" EstimateRebinds="0" EstimateRewinds="0" EstimatedExecutionMode="Row" EstimateRows="6.32456" LogicalOp="Compute Scalar" NodeId="0" Parallel="false" PhysicalOp="Compute Scalar" EstimatedTotalSubtreeCost="0.0215664">
+              <OutputList>
+                <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="reserva_id" />
+                <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="tipo_reserva" />
+                <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="fecha_inicio" />
+                <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="fecha_fin" />
+                <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="estado" />
+                <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Usuario]" Alias="[u]" Column="nombre_completo" />
+                <ColumnReference Column="Expr1005" />
+              </OutputList>
+              <ComputeScalar>
+                <DefinedValues>
+                  <DefinedValue>
+                    <ColumnReference Column="Expr1005" />
+                    <ScalarOperator ScalarString="CASE WHEN [Expr1003] IS NULL THEN (0) ELSE [Expr1003] END">
+                      <IF>
+                        <Condition>
+                          <ScalarOperator>
+                            <Logical Operation="IS NULL">
+                              <ScalarOperator>
+                                <Identifier>
+                                  <ColumnReference Column="Expr1003" />
+                                </Identifier>
+                              </ScalarOperator>
+                            </Logical>
+                          </ScalarOperator>
+                        </Condition>
+                        <Then>
+                          <ScalarOperator>
+                            <Const ConstValue="(0)" />
+                          </ScalarOperator>
+                        </Then>
+                        <Else>
+                          <ScalarOperator>
+                            <Identifier>
+                              <ColumnReference Column="Expr1003" />
+                            </Identifier>
+                          </ScalarOperator>
+                        </Else>
+                      </IF>
+                    </ScalarOperator>
+                  </DefinedValue>
+                </DefinedValues>
+                <RelOp AvgRowSize="109" EstimateCPU="8.36E-06" EstimateIO="0" EstimateRebinds="0" EstimateRewinds="0" EstimatedExecutionMode="Row" EstimateRows="6.32456" LogicalOp="Left Outer Join" NodeId="1" Parallel="false" PhysicalOp="Nested Loops" EstimatedTotalSubtreeCost="0.0215657">
+                  <OutputList>
+                    <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="reserva_id" />
+                    <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="tipo_reserva" />
+                    <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="fecha_inicio" />
+                    <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="fecha_fin" />
+                    <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="estado" />
+                    <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Usuario]" Alias="[u]" Column="nombre_completo" />
+                    <ColumnReference Column="Expr1003" />
+                  </OutputList>
+                  <RunTimeInformation>
+                    <RunTimeCountersPerThread Thread="0" ActualRows="40" Batches="0" ActualEndOfScans="1" ActualExecutions="1" ActualExecutionMode="Row" ActualElapsedms="2" ActualCPUms="1" />
+                  </RunTimeInformation>
+                  <NestedLoops Optimized="false">
+                    <OuterReferences>
+                      <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="reserva_id" />
+                    </OuterReferences>
+                    <RelOp AvgRowSize="105" EstimateCPU="4.48708E-06" EstimateIO="0" EstimateRebinds="0" EstimateRewinds="0" EstimatedExecutionMode="Row" EstimateRows="2" LogicalOp="Inner Join" NodeId="2" Parallel="false" PhysicalOp="Nested Loops" EstimatedTotalSubtreeCost="0.0180619">
+                      <OutputList>
+                        <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="reserva_id" />
+                        <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="tipo_reserva" />
+                        <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="fecha_inicio" />
+                        <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="fecha_fin" />
+                        <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="estado" />
+                        <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Usuario]" Alias="[u]" Column="nombre_completo" />
+                      </OutputList>
+                      <RunTimeInformation>
+                        <RunTimeCountersPerThread Thread="0" ActualRows="40" Batches="0" ActualEndOfScans="1" ActualExecutions="1" ActualExecutionMode="Row" ActualElapsedms="1" ActualCPUms="0" />
+                      </RunTimeInformation>
+                      <NestedLoops Optimized="false">
+                        <OuterReferences>
+                          <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="cliente_id" />
+                        </OuterReferences>
+                        <RelOp AvgRowSize="57" EstimateCPU="0.000100228" EstimateIO="0.0112613" EstimateRebinds="0" EstimateRewinds="0" EstimatedExecutionMode="Row" EstimateRows="1.07346" LogicalOp="Sort" NodeId="3" Parallel="false" PhysicalOp="Sort" EstimatedTotalSubtreeCost="0.0147627">
+                          <OutputList>
+                            <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="reserva_id" />
+                            <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="cliente_id" />
+                            <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="tipo_reserva" />
+                            <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="fecha_inicio" />
+                            <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="fecha_fin" />
+                            <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="estado" />
+                          </OutputList>
+                          <MemoryFractions Input="1" Output="1" />
+                          <RunTimeInformation>
+                            <RunTimeCountersPerThread Thread="0" ActualRebinds="1" ActualRewinds="0" ActualRows="40" Batches="0" ActualEndOfScans="1" ActualExecutions="1" ActualExecutionMode="Row" ActualElapsedms="0" ActualCPUms="0" ActualScans="0" ActualLogicalReads="0" ActualPhysicalReads="0" ActualReadAheads="0" ActualLobLogicalReads="0" ActualLobPhysicalReads="0" ActualLobReadAheads="0" InputMemoryGrant="1024" OutputMemoryGrant="640" UsedMemoryGrant="16" />
+                          </RunTimeInformation>
+                          <Sort Distinct="false">
+                            <OrderBy>
+                              <OrderByColumn Ascending="true">
+                                <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="fecha_inicio" />
+                              </OrderByColumn>
+                              <OrderByColumn Ascending="true">
+                                <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="reserva_id" />
+                              </OrderByColumn>
+                            </OrderBy>
+                            <RelOp AvgRowSize="61" EstimateCPU="0.000201" EstimateIO="0.003125" EstimateRebinds="0" EstimateRewinds="0" EstimatedExecutionMode="Row" EstimateRows="1.07346" EstimatedRowsRead="40" LogicalOp="Clustered Index Scan" NodeId="4" Parallel="false" PhysicalOp="Clustered Index Scan" EstimatedTotalSubtreeCost="0.003326" TableCardinality="40">
+                              <OutputList>
+                                <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="reserva_id" />
+                                <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="cliente_id" />
+                                <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="tipo_reserva" />
+                                <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="fecha_inicio" />
+                                <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="fecha_fin" />
+                                <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="estado" />
+                              </OutputList>
+                              <Warnings>
+                                <ColumnsWithNoStatistics>
+                                  <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="cliente_id" />
+                                  <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="fecha_inicio" />
+                                  <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="estado" />
+                                </ColumnsWithNoStatistics>
+                              </Warnings>
+                              <RunTimeInformation>
+                                <RunTimeCountersPerThread Thread="0" ActualRows="40" ActualRowsRead="40" Batches="0" ActualEndOfScans="1" ActualExecutions="1" ActualExecutionMode="Row" ActualElapsedms="0" ActualCPUms="0" ActualScans="1" ActualLogicalReads="2" ActualPhysicalReads="0" ActualReadAheads="0" ActualLobLogicalReads="0" ActualLobPhysicalReads="0" ActualLobReadAheads="0" />
+                              </RunTimeInformation>
+                              <IndexScan Ordered="false" ForcedIndex="false" ForceScan="false" NoExpandHint="false" Storage="RowStore">
+                                <DefinedValues>
+                                  <DefinedValue>
+                                    <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="reserva_id" />
+                                  </DefinedValue>
+                                  <DefinedValue>
+                                    <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="cliente_id" />
+                                  </DefinedValue>
+                                  <DefinedValue>
+                                    <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="tipo_reserva" />
+                                  </DefinedValue>
+                                  <DefinedValue>
+                                    <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="fecha_inicio" />
+                                  </DefinedValue>
+                                  <DefinedValue>
+                                    <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="fecha_fin" />
+                                  </DefinedValue>
+                                  <DefinedValue>
+                                    <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="estado" />
+                                  </DefinedValue>
+                                </DefinedValues>
+                                <Object Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Index="[PK__Reserva__F1437E489AAC63E8]" Alias="[r]" IndexKind="Clustered" Storage="RowStore" />
+                                <Predicate>
+                                  <ScalarOperator ScalarString="[RentaTicaDB].[renta].[Reserva].[negocio_id] as [r].[negocio_id]=[@negocio_id] AND [RentaTicaDB].[renta].[Reserva].[fecha_inicio] as [r].[fecha_inicio]&gt;=getdate() AND [RentaTicaDB].[renta].[Reserva].[fecha_inicio] as [r].[fecha_inicio]&lt;dateadd(day,CONVERT_IMPLICIT(bigint,[@dias]+(1),0),CONVERT(date,getdate(),0)) AND ([RentaTicaDB].[renta].[Reserva].[estado] as [r].[estado]='Confirmada' OR [RentaTicaDB].[renta].[Reserva].[estado] as [r].[estado]='Pendiente')">
+                                    <Logical Operation="AND">
+                                      <ScalarOperator>
+                                        <Compare CompareOp="EQ">
+                                          <ScalarOperator>
+                                            <Identifier>
+                                              <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="negocio_id" />
+                                            </Identifier>
+                                          </ScalarOperator>
+                                          <ScalarOperator>
+                                            <Identifier>
+                                              <ColumnReference Column="@negocio_id" />
+                                            </Identifier>
+                                          </ScalarOperator>
+                                        </Compare>
+                                      </ScalarOperator>
+                                      <ScalarOperator>
+                                        <Compare CompareOp="GE">
+                                          <ScalarOperator>
+                                            <Identifier>
+                                              <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="fecha_inicio" />
+                                            </Identifier>
+                                          </ScalarOperator>
+                                          <ScalarOperator>
+                                            <Identifier>
+                                              <ColumnReference Column="ConstExpr1006">
+                                                <ScalarOperator>
+                                                  <Intrinsic FunctionName="getdate" />
+                                                </ScalarOperator>
+                                              </ColumnReference>
+                                            </Identifier>
+                                          </ScalarOperator>
+                                        </Compare>
+                                      </ScalarOperator>
+                                      <ScalarOperator>
+                                        <Compare CompareOp="LT">
+                                          <ScalarOperator>
+                                            <Identifier>
+                                              <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="fecha_inicio" />
+                                            </Identifier>
+                                          </ScalarOperator>
+                                          <ScalarOperator>
+                                            <Identifier>
+                                              <ColumnReference Column="ConstExpr1007">
+                                                <ScalarOperator>
+                                                  <Intrinsic FunctionName="dateadd">
+                                                    <ScalarOperator>
+                                                      <Const ConstValue="(4)" />
+                                                    </ScalarOperator>
+                                                    <ScalarOperator>
+                                                      <Convert DataType="bigint" Style="0" Implicit="true">
+                                                        <ScalarOperator>
+                                                          <Arithmetic Operation="ADD">
+                                                            <ScalarOperator>
+                                                              <Identifier>
+                                                                <ColumnReference Column="@dias" />
+                                                              </Identifier>
+                                                            </ScalarOperator>
+                                                            <ScalarOperator>
+                                                              <Const ConstValue="(1)" />
+                                                            </ScalarOperator>
+                                                          </Arithmetic>
+                                                        </ScalarOperator>
+                                                      </Convert>
+                                                    </ScalarOperator>
+                                                    <ScalarOperator>
+                                                      <Convert DataType="date" Style="0" Implicit="false">
+                                                        <ScalarOperator>
+                                                          <Intrinsic FunctionName="getdate" />
+                                                        </ScalarOperator>
+                                                      </Convert>
+                                                    </ScalarOperator>
+                                                  </Intrinsic>
+                                                </ScalarOperator>
+                                              </ColumnReference>
+                                            </Identifier>
+                                          </ScalarOperator>
+                                        </Compare>
+                                      </ScalarOperator>
+                                      <ScalarOperator>
+                                        <Logical Operation="OR">
+                                          <ScalarOperator>
+                                            <Compare CompareOp="EQ">
+                                              <ScalarOperator>
+                                                <Identifier>
+                                                  <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="estado" />
+                                                </Identifier>
+                                              </ScalarOperator>
+                                              <ScalarOperator>
+                                                <Const ConstValue="'Confirmada'" />
+                                              </ScalarOperator>
+                                            </Compare>
+                                          </ScalarOperator>
+                                          <ScalarOperator>
+                                            <Compare CompareOp="EQ">
+                                              <ScalarOperator>
+                                                <Identifier>
+                                                  <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="estado" />
+                                                </Identifier>
+                                              </ScalarOperator>
+                                              <ScalarOperator>
+                                                <Const ConstValue="'Pendiente'" />
+                                              </ScalarOperator>
+                                            </Compare>
+                                          </ScalarOperator>
+                                        </Logical>
+                                      </ScalarOperator>
+                                    </Logical>
+                                  </ScalarOperator>
+                                </Predicate>
+                              </IndexScan>
+                            </RelOp>
+                          </Sort>
+                        </RelOp>
+                        <RelOp AvgRowSize="61" EstimateCPU="0.0001581" EstimateIO="0.003125" EstimateRebinds="0.037383" EstimateRewinds="0.0360811" EstimatedExecutionMode="Row" EstimateRows="1" EstimatedRowsRead="1" LogicalOp="Clustered Index Seek" NodeId="5" Parallel="false" PhysicalOp="Clustered Index Seek" EstimatedTotalSubtreeCost="0.00329471" TableCardinality="2">
+                          <OutputList>
+                            <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Usuario]" Alias="[u]" Column="nombre_completo" />
+                          </OutputList>
+                          <RunTimeInformation>
+                            <RunTimeCountersPerThread Thread="0" ActualRows="40" ActualRowsRead="40" Batches="0" ActualEndOfScans="0" ActualExecutions="40" ActualExecutionMode="Row" ActualElapsedms="0" ActualCPUms="0" ActualScans="0" ActualLogicalReads="80" ActualPhysicalReads="1" ActualReadAheads="0" ActualLobLogicalReads="0" ActualLobPhysicalReads="0" ActualLobReadAheads="0" />
+                          </RunTimeInformation>
+                          <IndexScan Ordered="true" ScanDirection="FORWARD" ForcedIndex="false" ForceSeek="false" ForceScan="false" NoExpandHint="false" Storage="RowStore">
+                            <DefinedValues>
+                              <DefinedValue>
+                                <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Usuario]" Alias="[u]" Column="nombre_completo" />
+                              </DefinedValue>
+                            </DefinedValues>
+                            <Object Database="[RentaTicaDB]" Schema="[renta]" Table="[Usuario]" Index="[PK__Usuario__2ED7D2AFA81DE513]" Alias="[u]" IndexKind="Clustered" Storage="RowStore" />
+                            <SeekPredicates>
+                              <SeekPredicateNew>
+                                <SeekKeys>
+                                  <Prefix ScanType="EQ">
+                                    <RangeColumns>
+                                      <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Usuario]" Alias="[u]" Column="usuario_id" />
+                                    </RangeColumns>
+                                    <RangeExpressions>
+                                      <ScalarOperator ScalarString="[RentaTicaDB].[renta].[Reserva].[cliente_id] as [r].[cliente_id]">
+                                        <Identifier>
+                                          <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="cliente_id" />
+                                        </Identifier>
+                                      </ScalarOperator>
+                                    </RangeExpressions>
+                                  </Prefix>
+                                </SeekKeys>
+                              </SeekPredicateNew>
+                            </SeekPredicates>
+                          </IndexScan>
+                        </RelOp>
+                      </NestedLoops>
+                    </RelOp>
+                    <RelOp AvgRowSize="11" EstimateCPU="0" EstimateIO="0" EstimateRebinds="0.0734641" EstimateRewinds="0.926536" EstimatedExecutionMode="Row" EstimateRows="1" LogicalOp="Compute Scalar" NodeId="6" Parallel="false" PhysicalOp="Compute Scalar" EstimatedTotalSubtreeCost="0.00349549">
+                      <OutputList>
+                        <ColumnReference Column="Expr1003" />
+                      </OutputList>
+                      <ComputeScalar>
+                        <DefinedValues>
+                          <DefinedValue>
+                            <ColumnReference Column="Expr1003" />
+                            <ScalarOperator ScalarString="CONVERT_IMPLICIT(int,[Expr1010],0)">
+                              <Convert DataType="int" Style="0" Implicit="true">
+                                <ScalarOperator>
+                                  <Identifier>
+                                    <ColumnReference Column="Expr1010" />
+                                  </Identifier>
+                                </ScalarOperator>
+                              </Convert>
+                            </ScalarOperator>
+                          </DefinedValue>
+                        </DefinedValues>
+                        <RelOp AvgRowSize="11" EstimateCPU="4.29473E-06" EstimateIO="0" EstimateRebinds="0.0734641" EstimateRewinds="0.926536" EstimatedExecutionMode="Row" EstimateRows="1" LogicalOp="Aggregate" NodeId="7" Parallel="false" PhysicalOp="Stream Aggregate" EstimatedTotalSubtreeCost="0.00349549">
+                          <OutputList>
+                            <ColumnReference Column="Expr1010" />
+                          </OutputList>
+                          <RunTimeInformation>
+                            <RunTimeCountersPerThread Thread="0" ActualRows="40" Batches="0" ActualEndOfScans="0" ActualExecutions="40" ActualExecutionMode="Row" ActualElapsedms="1" ActualCPUms="0" />
+                          </RunTimeInformation>
+                          <StreamAggregate>
+                            <DefinedValues>
+                              <DefinedValue>
+                                <ColumnReference Column="Expr1010" />
+                                <ScalarOperator ScalarString="Count(*)">
+                                  <Aggregate AggType="countstar" Distinct="false" />
+                                </ScalarOperator>
+                              </DefinedValue>
+                            </DefinedValues>
+                            <RelOp AvgRowSize="11" EstimateCPU="0.0001225" EstimateIO="0.0032035" EstimateRebinds="0" EstimateRewinds="1" EstimatedExecutionMode="Row" EstimateRows="6.32456" EstimatedRowsRead="40" LogicalOp="Clustered Index Scan" NodeId="8" Parallel="false" PhysicalOp="Clustered Index Scan" EstimatedTotalSubtreeCost="0.0034485" TableCardinality="40">
+                              <OutputList />
+                              <RunTimeInformation>
+                                <RunTimeCountersPerThread Thread="0" ActualRows="40" ActualRowsRead="1600" Batches="0" ActualEndOfScans="40" ActualExecutions="40" ActualExecutionMode="Row" ActualElapsedms="1" ActualCPUms="0" ActualScans="40" ActualLogicalReads="80" ActualPhysicalReads="1" ActualReadAheads="0" ActualLobLogicalReads="0" ActualLobPhysicalReads="0" ActualLobReadAheads="0" />
+                              </RunTimeInformation>
+                              <IndexScan Ordered="false" ForcedIndex="false" ForceScan="false" NoExpandHint="false" Storage="RowStore">
+                                <DefinedValues />
+                                <Object Database="[RentaTicaDB]" Schema="[renta]" Table="[DetalleReserva]" Index="[PK__DetalleR__91B12E70CCFC3FAF]" Alias="[d]" IndexKind="Clustered" Storage="RowStore" />
+                                <Predicate>
+                                  <ScalarOperator ScalarString="[RentaTicaDB].[renta].[DetalleReserva].[reserva_id] as [d].[reserva_id]=[RentaTicaDB].[renta].[Reserva].[reserva_id] as [r].[reserva_id]">
+                                    <Compare CompareOp="EQ">
+                                      <ScalarOperator>
+                                        <Identifier>
+                                          <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[DetalleReserva]" Alias="[d]" Column="reserva_id" />
+                                        </Identifier>
+                                      </ScalarOperator>
+                                      <ScalarOperator>
+                                        <Identifier>
+                                          <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="reserva_id" />
+                                        </Identifier>
+                                      </ScalarOperator>
+                                    </Compare>
+                                  </ScalarOperator>
+                                </Predicate>
+                              </IndexScan>
+                            </RelOp>
+                          </StreamAggregate>
+                        </RelOp>
+                      </ComputeScalar>
+                    </RelOp>
+                  </NestedLoops>
+                </RelOp>
+              </ComputeScalar>
+            </RelOp>
+            <ParameterList>
+              <ColumnReference Column="@dias" ParameterDataType="int" ParameterCompiledValue="(30)" ParameterRuntimeValue="(30)" />
+              <ColumnReference Column="@negocio_id" ParameterDataType="int" ParameterCompiledValue="(17)" ParameterRuntimeValue="(17)" />
+            </ParameterList>
+          </QueryPlan>
+        </StmtSimple>
+      </Statements>
+    </Batch>
+    <Batch>
+      <Statements>
+        <StmtSimple StatementCompId="53" StatementEstRows="1" StatementId="4" StatementOptmLevel="FULL" StatementOptmEarlyAbortReason="GoodEnoughPlanFound" CardinalityEstimationModelVersion="170" StatementSubTreeCost="0.0185195" StatementText="SELECT CONVERT(date,p.fecha_pago) AS fecha,COUNT(*) AS pagos,SUM(p.monto) AS ingresos&#xA; FROM renta.Pago p JOIN renta.Reserva r ON r.reserva_id=p.reserva_id&#xA; WHERE r.negocio_id=@negocio_id AND p.estado='Completado'&#xA;   AND p.fecha_pago&gt;=@desde AND p.fecha_pago&lt;DATEADD(DAY,1,@hasta)&#xA; GROUP BY CONVERT(date,p.fecha_pago) ORDER BY fecha" StatementType="SELECT" QueryHash="0xFED0AF8E62500F16" QueryPlanHash="0xDFAD7EA13A459016" RetrievedFromCache="true" StatementSqlHandle="0x0900C74D15D5469157915DB6AEAF32B704F80000000000000000000000000000000000000000000000000000" DatabaseContextSettingsId="2" ParentObjectId="1458104235" StatementParameterizationType="0" SecurityPolicyApplied="false">
+          <StatementSetOptions ANSI_NULLS="true" ANSI_PADDING="true" ANSI_WARNINGS="true" ARITHABORT="true" CONCAT_NULL_YIELDS_NULL="true" NUMERIC_ROUNDABORT="false" QUOTED_IDENTIFIER="true" />
+          <QueryPlan DegreeOfParallelism="1" MemoryGrant="1024" CachedPlanSize="48" CompileTime="30" CompileCPU="30" CompileMemory="664">
+            <MemoryGrantInfo SerialRequiredMemory="512" SerialDesiredMemory="544" RequiredMemory="512" DesiredMemory="544" RequestedMemory="1024" GrantWaitTime="0" GrantedMemory="1024" MaxUsedMemory="16" MaxQueryMemory="205488" LastRequestedMemory="0" IsMemoryGrantFeedbackAdjusted="No: First Execution" />
+            <OptimizerHardwareDependentProperties EstimatedAvailableMemoryGrant="101537" EstimatedPagesCached="50768" EstimatedAvailableDegreeOfParallelism="4" MaxCompileMemory="555816" />
+            <OptimizerStatsUsage>
+              <StatisticsInfo Database="[RentaTicaDB]" Schema="[renta]" Table="[Pago]" Statistics="[_WA_Sys_00000006_76969D2E]" ModificationCount="126" SamplingPercent="100" LastUpdate="2026-10-19T18:24:40.44" />
+              <StatisticsInfo Database="[RentaTicaDB]" Schema="[renta]" Table="[Pago]" Statistics="[_WA_Sys_00000002_76969D2E]" ModificationCount="126" SamplingPercent="100" LastUpdate="2026-10-19T18:24:40.45" />
+              <StatisticsInfo Database="[RentaTicaDB]" Schema="[renta]" Table="[Pago]" Statistics="[_WA_Sys_00000005_76969D2E]" ModificationCount="80" SamplingPercent="100" LastUpdate="2026-11-23T11:08:58.86" />
+              <StatisticsInfo Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Statistics="[_WA_Sys_00000002_656C112C]" ModificationCount="137" SamplingPercent="100" LastUpdate="2026-10-19T17:54:33.94" />
+              <StatisticsInfo Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Statistics="[PK__Reserva__F1437E489AAC63E8]" ModificationCount="135" SamplingPercent="100" LastUpdate="2026-10-19T18:00:28.6" />
+            </OptimizerStatsUsage>
+            <QueryTimeStats CpuTime="1" ElapsedTime="1" />
+            <RelOp AvgRowSize="31" EstimateCPU="1E-07" EstimateIO="0" EstimateRebinds="0" EstimateRewinds="0" EstimatedExecutionMode="Row" EstimateRows="1" LogicalOp="Compute Scalar" NodeId="1" Parallel="false" PhysicalOp="Compute Scalar" EstimatedTotalSubtreeCost="0.0185195">
+              <OutputList>
+                <ColumnReference Column="Expr1002" />
+                <ColumnReference Column="Expr1003" />
+                <ColumnReference Column="Expr1004" />
+              </OutputList>
+              <ComputeScalar>
+                <DefinedValues>
+                  <DefinedValue>
+                    <ColumnReference Column="Expr1003" />
+                    <ScalarOperator ScalarString="CONVERT_IMPLICIT(int,[globalagg1007],0)">
+                      <Convert DataType="int" Style="0" Implicit="true">
+                        <ScalarOperator>
+                          <Identifier>
+                            <ColumnReference Column="globalagg1007" />
+                          </Identifier>
+                        </ScalarOperator>
+                      </Convert>
+                    </ScalarOperator>
+                  </DefinedValue>
+                </DefinedValues>
+                <RelOp AvgRowSize="35" EstimateCPU="1.1E-06" EstimateIO="0" EstimateRebinds="0" EstimateRewinds="0" EstimatedExecutionMode="Row" EstimateRows="1" LogicalOp="Aggregate" NodeId="2" Parallel="false" PhysicalOp="Stream Aggregate" EstimatedTotalSubtreeCost="0.0185194">
+                  <OutputList>
+                    <ColumnReference Column="Expr1002" />
+                    <ColumnReference Column="Expr1004" />
+                    <ColumnReference Column="globalagg1007" />
+                  </OutputList>
+                  <RunTimeInformation>
+                    <RunTimeCountersPerThread Thread="0" ActualRows="1" Batches="0" ActualEndOfScans="1" ActualExecutions="1" ActualExecutionMode="Row" ActualElapsedms="1" ActualCPUms="0" />
+                  </RunTimeInformation>
+                  <StreamAggregate>
+                    <DefinedValues>
+                      <DefinedValue>
+                        <ColumnReference Column="globalagg1007" />
+                        <ScalarOperator ScalarString="SUM([partialagg1006])">
+                          <Aggregate AggType="SUM" Distinct="false">
+                            <ScalarOperator>
+                              <Identifier>
+                                <ColumnReference Column="partialagg1006" />
+                              </Identifier>
+                            </ScalarOperator>
+                          </Aggregate>
+                        </ScalarOperator>
+                      </DefinedValue>
+                      <DefinedValue>
+                        <ColumnReference Column="Expr1004" />
+                        <ScalarOperator ScalarString="SUM([partialagg1008])">
+                          <Aggregate AggType="SUM" Distinct="false">
+                            <ScalarOperator>
+                              <Identifier>
+                                <ColumnReference Column="partialagg1008" />
+                              </Identifier>
+                            </ScalarOperator>
+                          </Aggregate>
+                        </ScalarOperator>
+                      </DefinedValue>
+                    </DefinedValues>
+                    <GroupBy>
+                      <ColumnReference Column="Expr1002" />
+                    </GroupBy>
+                    <RelOp AvgRowSize="35" EstimateCPU="1.045E-05" EstimateIO="0" EstimateRebinds="0" EstimateRewinds="0" EstimatedExecutionMode="Row" EstimateRows="1" LogicalOp="Inner Join" NodeId="3" Parallel="false" PhysicalOp="Nested Loops" EstimatedTotalSubtreeCost="0.0185183">
+                      <OutputList>
+                        <ColumnReference Column="Expr1002" />
+                        <ColumnReference Column="partialagg1006" />
+                        <ColumnReference Column="partialagg1008" />
+                      </OutputList>
+                      <RunTimeInformation>
+                        <RunTimeCountersPerThread Thread="0" ActualRows="40" Batches="0" ActualEndOfScans="1" ActualExecutions="1" ActualExecutionMode="Row" ActualElapsedms="1" ActualCPUms="0" />
+                      </RunTimeInformation>
+                      <NestedLoops Optimized="false">
+                        <OuterReferences>
+                          <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Pago]" Alias="[p]" Column="reserva_id" />
+                        </OuterReferences>
+                        <RelOp AvgRowSize="39" EstimateCPU="1.925E-05" EstimateIO="0" EstimateRebinds="0" EstimateRewinds="0" EstimatedExecutionMode="Row" EstimateRows="2.5" LogicalOp="Aggregate" NodeId="4" Parallel="false" PhysicalOp="Stream Aggregate" EstimatedTotalSubtreeCost="0.0149864">
+                          <OutputList>
+                            <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Pago]" Alias="[p]" Column="reserva_id" />
+                            <ColumnReference Column="Expr1002" />
+                            <ColumnReference Column="partialagg1006" />
+                            <ColumnReference Column="partialagg1008" />
+                          </OutputList>
+                          <RunTimeInformation>
+                            <RunTimeCountersPerThread Thread="0" ActualRows="40" Batches="0" ActualEndOfScans="1" ActualExecutions="1" ActualExecutionMode="Row" ActualElapsedms="1" ActualCPUms="0" />
+                          </RunTimeInformation>
+                          <StreamAggregate>
+                            <DefinedValues>
+                              <DefinedValue>
+                                <ColumnReference Column="partialagg1006" />
+                                <ScalarOperator ScalarString="Count(*)">
+                                  <Aggregate AggType="countstar" Distinct="false" />
+                                </ScalarOperator>
+                              </DefinedValue>
+                              <DefinedValue>
+                                <ColumnReference Column="partialagg1008" />
+                                <ScalarOperator ScalarString="SUM([RentaTicaDB].[renta].[Pago].[monto] as [p].[monto])">
+                                  <Aggregate AggType="SUM" Distinct="false">
+                                    <ScalarOperator>
+                                      <Identifier>
+                                        <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Pago]" Alias="[p]" Column="monto" />
+                                      </Identifier>
+                                    </ScalarOperator>
+                                  </Aggregate>
+                                </ScalarOperator>
+                              </DefinedValue>
+                            </DefinedValues>
+                            <GroupBy>
+                              <ColumnReference Column="Expr1002" />
+                              <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Pago]" Alias="[p]" Column="reserva_id" />
+                            </GroupBy>
+                            <RelOp AvgRowSize="23" EstimateCPU="0.000329665" EstimateIO="0.0112613" EstimateRebinds="0" EstimateRewinds="0" EstimatedExecutionMode="Row" EstimateRows="30" LogicalOp="Sort" NodeId="5" Parallel="false" PhysicalOp="Sort" EstimatedTotalSubtreeCost="0.0149671">
+                              <OutputList>
+                                <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Pago]" Alias="[p]" Column="reserva_id" />
+                                <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Pago]" Alias="[p]" Column="monto" />
+                                <ColumnReference Column="Expr1002" />
+                              </OutputList>
+                              <MemoryFractions Input="1" Output="1" />
+                              <RunTimeInformation>
+                                <RunTimeCountersPerThread Thread="0" ActualRebinds="1" ActualRewinds="0" ActualRows="40" Batches="0" ActualEndOfScans="1" ActualExecutions="1" ActualExecutionMode="Row" ActualElapsedms="1" ActualCPUms="0" ActualScans="0" ActualLogicalReads="0" ActualPhysicalReads="0" ActualReadAheads="0" ActualLobLogicalReads="0" ActualLobPhysicalReads="0" ActualLobReadAheads="0" InputMemoryGrant="1024" OutputMemoryGrant="640" UsedMemoryGrant="16" />
+                              </RunTimeInformation>
+                              <Sort Distinct="false">
+                                <OrderBy>
+                                  <OrderByColumn Ascending="true">
+                                    <ColumnReference Column="Expr1002" />
+                                  </OrderByColumn>
+                                  <OrderByColumn Ascending="true">
+                                    <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Pago]" Alias="[p]" Column="reserva_id" />
+                                  </OrderByColumn>
+                                </OrderBy>
+                                <RelOp AvgRowSize="23" EstimateCPU="3E-06" EstimateIO="0" EstimateRebinds="0" EstimateRewinds="0" EstimatedExecutionMode="Row" EstimateRows="30" LogicalOp="Compute Scalar" NodeId="6" Parallel="false" PhysicalOp="Compute Scalar" EstimatedTotalSubtreeCost="0.0033762">
+                                  <OutputList>
+                                    <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Pago]" Alias="[p]" Column="reserva_id" />
+                                    <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Pago]" Alias="[p]" Column="monto" />
+                                    <ColumnReference Column="Expr1002" />
+                                  </OutputList>
+                                  <ComputeScalar>
+                                    <DefinedValues>
+                                      <DefinedValue>
+                                        <ColumnReference Column="Expr1002" />
+                                        <ScalarOperator ScalarString="CONVERT(date,[RentaTicaDB].[renta].[Pago].[fecha_pago] as [p].[fecha_pago],0)">
+                                          <Convert DataType="date" Style="0" Implicit="false">
+                                            <ScalarOperator>
+                                              <Identifier>
+                                                <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Pago]" Alias="[p]" Column="fecha_pago" />
+                                              </Identifier>
+                                            </ScalarOperator>
+                                          </Convert>
+                                        </ScalarOperator>
+                                      </DefinedValue>
+                                    </DefinedValues>
+                                    <RelOp AvgRowSize="42" EstimateCPU="0.000201" EstimateIO="0.003125" EstimateRebinds="0" EstimateRewinds="0" EstimatedExecutionMode="Row" EstimateRows="30" EstimatedRowsRead="40" LogicalOp="Clustered Index Scan" NodeId="7" Parallel="false" PhysicalOp="Clustered Index Scan" EstimatedTotalSubtreeCost="0.003326" TableCardinality="40">
+                                      <OutputList>
+                                        <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Pago]" Alias="[p]" Column="reserva_id" />
+                                        <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Pago]" Alias="[p]" Column="monto" />
+                                        <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Pago]" Alias="[p]" Column="fecha_pago" />
+                                      </OutputList>
+                                      <RunTimeInformation>
+                                        <RunTimeCountersPerThread Thread="0" ActualRows="40" ActualRowsRead="40" Batches="0" ActualEndOfScans="1" ActualExecutions="1" ActualExecutionMode="Row" ActualElapsedms="0" ActualCPUms="0" ActualScans="1" ActualLogicalReads="2" ActualPhysicalReads="1" ActualReadAheads="0" ActualLobLogicalReads="0" ActualLobPhysicalReads="0" ActualLobReadAheads="0" />
+                                      </RunTimeInformation>
+                                      <IndexScan Ordered="false" ForcedIndex="false" ForceScan="false" NoExpandHint="false" Storage="RowStore">
+                                        <DefinedValues>
+                                          <DefinedValue>
+                                            <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Pago]" Alias="[p]" Column="reserva_id" />
+                                          </DefinedValue>
+                                          <DefinedValue>
+                                            <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Pago]" Alias="[p]" Column="monto" />
+                                          </DefinedValue>
+                                          <DefinedValue>
+                                            <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Pago]" Alias="[p]" Column="fecha_pago" />
+                                          </DefinedValue>
+                                        </DefinedValues>
+                                        <Object Database="[RentaTicaDB]" Schema="[renta]" Table="[Pago]" Index="[PK__Pago__FFF0A58E5DE5A8EA]" Alias="[p]" IndexKind="Clustered" Storage="RowStore" />
+                                        <Predicate>
+                                          <ScalarOperator ScalarString="[RentaTicaDB].[renta].[Pago].[fecha_pago] as [p].[fecha_pago]&gt;=[@desde] AND [RentaTicaDB].[renta].[Pago].[fecha_pago] as [p].[fecha_pago]&lt;dateadd(day,(1),[@hasta]) AND [RentaTicaDB].[renta].[Pago].[estado] as [p].[estado]='Completado'">
+                                            <Logical Operation="AND">
+                                              <ScalarOperator>
+                                                <Compare CompareOp="GE">
+                                                  <ScalarOperator>
+                                                    <Identifier>
+                                                      <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Pago]" Alias="[p]" Column="fecha_pago" />
+                                                    </Identifier>
+                                                  </ScalarOperator>
+                                                  <ScalarOperator>
+                                                    <Identifier>
+                                                      <ColumnReference Column="@desde" />
+                                                    </Identifier>
+                                                  </ScalarOperator>
+                                                </Compare>
+                                              </ScalarOperator>
+                                              <ScalarOperator>
+                                                <Compare CompareOp="LT">
+                                                  <ScalarOperator>
+                                                    <Identifier>
+                                                      <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Pago]" Alias="[p]" Column="fecha_pago" />
+                                                    </Identifier>
+                                                  </ScalarOperator>
+                                                  <ScalarOperator>
+                                                    <Identifier>
+                                                      <ColumnReference Column="ConstExpr1005">
+                                                        <ScalarOperator>
+                                                          <Intrinsic FunctionName="dateadd">
+                                                            <ScalarOperator>
+                                                              <Const ConstValue="(4)" />
+                                                            </ScalarOperator>
+                                                            <ScalarOperator>
+                                                              <Const ConstValue="(1)" />
+                                                            </ScalarOperator>
+                                                            <ScalarOperator>
+                                                              <Identifier>
+                                                                <ColumnReference Column="@hasta" />
+                                                              </Identifier>
+                                                            </ScalarOperator>
+                                                          </Intrinsic>
+                                                        </ScalarOperator>
+                                                      </ColumnReference>
+                                                    </Identifier>
+                                                  </ScalarOperator>
+                                                </Compare>
+                                              </ScalarOperator>
+                                              <ScalarOperator>
+                                                <Compare CompareOp="EQ">
+                                                  <ScalarOperator>
+                                                    <Identifier>
+                                                      <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Pago]" Alias="[p]" Column="estado" />
+                                                    </Identifier>
+                                                  </ScalarOperator>
+                                                  <ScalarOperator>
+                                                    <Const ConstValue="'Completado'" />
+                                                  </ScalarOperator>
+                                                </Compare>
+                                              </ScalarOperator>
+                                            </Logical>
+                                          </ScalarOperator>
+                                        </Predicate>
+                                      </IndexScan>
+                                    </RelOp>
+                                  </ComputeScalar>
+                                </RelOp>
+                              </Sort>
+                            </RelOp>
+                          </StreamAggregate>
+                        </RelOp>
+                        <RelOp AvgRowSize="11" EstimateCPU="0.0001581" EstimateIO="0.003125" EstimateRebinds="1.5" EstimateRewinds="0" EstimatedExecutionMode="Row" EstimateRows="1" EstimatedRowsRead="1" LogicalOp="Clustered Index Seek" NodeId="8" Parallel="false" PhysicalOp="Clustered Index Seek" EstimatedTotalSubtreeCost="0.00352025" TableCardinality="40">
+                          <OutputList />
+                          <RunTimeInformation>
+                            <RunTimeCountersPerThread Thread="0" ActualRows="40" ActualRowsRead="40" Batches="0" ActualEndOfScans="0" ActualExecutions="40" ActualExecutionMode="Row" ActualElapsedms="0" ActualCPUms="0" ActualScans="0" ActualLogicalReads="80" ActualPhysicalReads="0" ActualReadAheads="0" ActualLobLogicalReads="0" ActualLobPhysicalReads="0" ActualLobReadAheads="0" />
+                          </RunTimeInformation>
+                          <IndexScan Ordered="true" ScanDirection="FORWARD" ForcedIndex="false" ForceSeek="false" ForceScan="false" NoExpandHint="false" Storage="RowStore">
+                            <DefinedValues />
+                            <Object Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Index="[PK__Reserva__F1437E489AAC63E8]" Alias="[r]" IndexKind="Clustered" Storage="RowStore" />
+                            <SeekPredicates>
+                              <SeekPredicateNew>
+                                <SeekKeys>
+                                  <Prefix ScanType="EQ">
+                                    <RangeColumns>
+                                      <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="reserva_id" />
+                                    </RangeColumns>
+                                    <RangeExpressions>
+                                      <ScalarOperator ScalarString="[RentaTicaDB].[renta].[Pago].[reserva_id] as [p].[reserva_id]">
+                                        <Identifier>
+                                          <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Pago]" Alias="[p]" Column="reserva_id" />
+                                        </Identifier>
+                                      </ScalarOperator>
+                                    </RangeExpressions>
+                                  </Prefix>
+                                </SeekKeys>
+                              </SeekPredicateNew>
+                            </SeekPredicates>
+                            <Predicate>
+                              <ScalarOperator ScalarString="[RentaTicaDB].[renta].[Reserva].[negocio_id] as [r].[negocio_id]=[@negocio_id]">
+                                <Compare CompareOp="EQ">
+                                  <ScalarOperator>
+                                    <Identifier>
+                                      <ColumnReference Database="[RentaTicaDB]" Schema="[renta]" Table="[Reserva]" Alias="[r]" Column="negocio_id" />
+                                    </Identifier>
+                                  </ScalarOperator>
+                                  <ScalarOperator>
+                                    <Identifier>
+                                      <ColumnReference Column="@negocio_id" />
+                                    </Identifier>
+                                  </ScalarOperator>
+                                </Compare>
+                              </ScalarOperator>
+                            </Predicate>
+                          </IndexScan>
+                        </RelOp>
+                      </NestedLoops>
+                    </RelOp>
+                  </StreamAggregate>
+                </RelOp>
+              </ComputeScalar>
+            </RelOp>
+            <ParameterList>
+              <ColumnReference Column="@hasta" ParameterDataType="date" ParameterCompiledValue="'2026-11-23'" ParameterRuntimeValue="'2026-11-23'" />
+              <ColumnReference Column="@desde" ParameterDataType="date" ParameterCompiledValue="'2026-08-25'" ParameterRuntimeValue="'2026-08-25'" />
+              <ColumnReference Column="@negocio_id" ParameterDataType="int" ParameterCompiledValue="(17)" ParameterRuntimeValue="(17)" />
+            </ParameterList>
+          </QueryPlan>
+        </StmtSimple>
+      </Statements>
+    </Batch>
+  </BatchSequence>
+</ShowPlanXML>
