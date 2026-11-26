@@ -25,9 +25,6 @@ public sealed class IndexModel(IHttpClientFactory httpClientFactory) : PageModel
     private const string EmailKey = "rentatica-user-email";
     private const string NameKey = "rentatica-user-name";
     private const string RoleKey = "rentatica-user-role";
-    private const string LastReservationKey = "rentatica-last-reservation";
-    private const string LastDetailKey = "rentatica-last-detail";
-    private const string LastAmountKey = "rentatica-last-amount";
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -44,15 +41,10 @@ public sealed class IndexModel(IHttpClientFactory httpClientFactory) : PageModel
     [BindProperty]
     public ReservationInput Reserva { get; set; } = new();
 
-    [BindProperty]
-    public PaymentInput Pago { get; set; } = new();
 
-    [BindProperty]
-    public ReturnInput Devolucion { get; set; } = new();
 
     public List<CustomerOption> Clientes { get; private set; } = [];
     public List<EquipmentOption> EquiposDisponibles { get; private set; } = [];
-    public List<PaymentMethodOption> MetodosPago { get; private set; } = [];
     public List<ReservationSummary> Reservas { get; private set; } = [];
 
     [BindProperty]
@@ -66,8 +58,6 @@ public sealed class IndexModel(IHttpClientFactory httpClientFactory) : PageModel
     public string DisplayEmail => HttpContext.Session.GetString(EmailKey) ?? "";
     public string DisplayName => HttpContext.Session.GetString(NameKey) ?? DisplayEmail;
     public string DisplayRole => HttpContext.Session.GetString(RoleKey) ?? "";
-    public int? LastReservationId => ReadSessionInt(LastReservationKey);
-    public int? LastDetailId => ReadSessionInt(LastDetailKey);
     public string? StatusMessage { get; private set; }
     public string? ErrorMessage { get; private set; }
     public string? ResponseJson { get; private set; }
@@ -169,78 +159,9 @@ public sealed class IndexModel(IHttpClientFactory httpClientFactory) : PageModel
             return Page();
         }
 
-        ResponseJson = FormatJson(result);
-        RememberCreatedReservation(result);
-        StatusMessage = "Reserva creada. El monto y el detalle se prepararon para los siguientes pasos.";
-        ModelState.Clear();
-        SetFormDefaults();
-        await LoadReferenceDataAsync();
-        return Page();
+        using var created = JsonDocument.Parse(result);
+        return RedirectToPage("/Reserva", new { id = created.RootElement.GetProperty("reserva_id").GetInt32() });
     }
-
-    public async Task<IActionResult> OnPostPagarAsync()
-    {
-        if (HasErrorsFor(nameof(Pago)))
-        {
-            ErrorMessage = GetValidationErrors(nameof(Pago));
-            await LoadReferenceDataAsync();
-            return Page();
-        }
-
-        var result = await SendProtectedAsync(
-            HttpMethod.Post,
-            $"api/reservas/{Pago.ReservaId}/pagos",
-            new { metodo_pago_id = Pago.MetodoPagoId, monto = Pago.Monto });
-        if (result is null)
-        {
-            await LoadReferenceDataAsync();
-            return Page();
-        }
-
-        ResponseJson = FormatJson(result);
-        StatusMessage = "Pago registrado. Revisa la reserva y continúa con la devolución.";
-        RememberReservationDetails(result);
-        ModelState.Clear();
-        SetFormDefaults();
-        await LoadReferenceDataAsync();
-        return Page();
-    }
-
-    public async Task<IActionResult> OnPostDevolverAsync()
-    {
-        if (HasErrorsFor(nameof(Devolucion)))
-        {
-            ErrorMessage = GetValidationErrors(nameof(Devolucion));
-            await LoadReferenceDataAsync();
-            return Page();
-        }
-
-        var result = await SendProtectedAsync(
-            HttpMethod.Post,
-            $"api/devoluciones/{Devolucion.DetalleId}",
-            new { estado_devolucion = Devolucion.Estado });
-        if (result is null)
-        {
-            await LoadReferenceDataAsync();
-            return Page();
-        }
-
-        var updatedReservation = LastReservationId is int reservationId
-            ? await SendProtectedAsync(HttpMethod.Get, $"api/reservas/{reservationId}")
-            : null;
-        ResponseJson = FormatJson(updatedReservation ?? result);
-        StatusMessage = updatedReservation is null
-            ? "Devolución registrada."
-            : "Devolución registrada. La respuesta muestra la reserva y el estado actualizado del equipo.";
-        HttpContext.Session.Remove(LastReservationKey);
-        HttpContext.Session.Remove(LastDetailKey);
-        HttpContext.Session.Remove(LastAmountKey);
-        ModelState.Clear();
-        SetFormDefaults();
-        await LoadReferenceDataAsync();
-        return Page();
-    }
-
     public async Task<IActionResult> OnPostFiltrarReservasAsync()
     {
         await LoadReferenceDataAsync();
@@ -313,22 +234,12 @@ public sealed class IndexModel(IHttpClientFactory httpClientFactory) : PageModel
     {
         Clientes = [];
         EquiposDisponibles = [];
-        MetodosPago = [];
         Reservas = [];
         if (!IsAuthenticated) return;
 
         Clientes = await LoadListAsync<CustomerOption>("api/clientes");
         EquiposDisponibles = await LoadListAsync<EquipmentOption>("api/equipos?estado=Disponible");
-        MetodosPago = await LoadListAsync<PaymentMethodOption>("api/metodos-pago");
         Reservas = await LoadListAsync<ReservationSummary>("api/reservas");
-        if (Pago.MetodoPagoId <= 0 && MetodosPago.Count > 0)
-            Pago.MetodoPagoId = MetodosPago[0].MetodoPagoId;
-        if (Pago.ReservaId <= 0)
-            Pago.ReservaId = LastReservationId ?? 0;
-        if (Pago.Monto <= 0 && decimal.TryParse(HttpContext.Session.GetString(LastAmountKey), System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var amount))
-            Pago.Monto = amount;
-        if (Devolucion.DetalleId <= 0)
-            Devolucion.DetalleId = LastDetailId ?? 0;
     }
 
     private async Task<List<T>> LoadListAsync<T>(string path)
@@ -374,68 +285,7 @@ public sealed class IndexModel(IHttpClientFactory httpClientFactory) : PageModel
         if (Reserva.FechaInicio == default) Reserva.FechaInicio = DateTime.Now.AddMinutes(-1);
         if (Reserva.FechaFin == default) Reserva.FechaFin = DateTime.Now.AddHours(2);
         if (string.IsNullOrWhiteSpace(Reserva.TipoReserva)) Reserva.TipoReserva = "Walk-in";
-        if (Pago.ReservaId <= 0) Pago.ReservaId = LastReservationId ?? 0;
-        if (Pago.Monto <= 0 && decimal.TryParse(HttpContext.Session.GetString(LastAmountKey), System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var amount))
-            Pago.Monto = amount;
-        if (Devolucion.DetalleId <= 0) Devolucion.DetalleId = LastDetailId ?? 0;
     }
-
-    private void RememberCreatedReservation(string body)
-    {
-        try
-        {
-            using var document = JsonDocument.Parse(body);
-            RememberReservationDetails(document.RootElement);
-        }
-        catch (JsonException)
-        {
-            // La respuesta ya está mostrada; si falta un identificador el usuario puede copiarlo del JSON.
-        }
-    }
-
-    private void RememberReservationDetails(string body)
-    {
-        try
-        {
-            using var document = JsonDocument.Parse(body);
-            RememberReservationDetails(document.RootElement);
-        }
-        catch (JsonException)
-        {
-            // La respuesta ya está mostrada; no se oculta el resultado de la operación.
-        }
-    }
-
-    private void RememberReservationDetails(JsonElement root)
-    {
-        if (root.TryGetProperty("reserva_id", out var id) && id.TryGetInt32(out var reservaId))
-        {
-            HttpContext.Session.SetInt32(LastReservationKey, reservaId);
-            Pago.ReservaId = reservaId;
-        }
-        if (root.TryGetProperty("reserva", out var reserva))
-        {
-            var hasAmount = false;
-            decimal amount = 0;
-            if (reserva.TryGetProperty("saldo", out var saldo))
-                hasAmount = saldo.TryGetDecimal(out amount);
-            if (!hasAmount && reserva.TryGetProperty("monto_final", out var total))
-                hasAmount = total.TryGetDecimal(out amount);
-            if (hasAmount)
-            {
-                HttpContext.Session.SetString(LastAmountKey, amount.ToString(System.Globalization.CultureInfo.InvariantCulture));
-                Pago.Monto = amount;
-            }
-        }
-        if (root.TryGetProperty("detalles", out var details) && details.ValueKind == JsonValueKind.Array && details.GetArrayLength() > 0 &&
-            details[0].TryGetProperty("detalle_id", out var detailId) && detailId.TryGetInt32(out var parsedDetail))
-        {
-            HttpContext.Session.SetInt32(LastDetailKey, parsedDetail);
-            Devolucion.DetalleId = parsedDetail;
-        }
-    }
-
-    private int? ReadSessionInt(string key) => HttpContext.Session.GetInt32(key);
 
     private static string? ReadApiError(string body)
     {
@@ -492,27 +342,6 @@ public sealed class IndexModel(IHttpClientFactory httpClientFactory) : PageModel
 
         [Required(ErrorMessage = "Indica la fecha y hora de fin.")]
         public DateTime FechaFin { get; set; } = DateTime.Now.AddHours(2);
-    }
-
-    public sealed class PaymentInput
-    {
-        [Range(1, int.MaxValue, ErrorMessage = "Crea primero una reserva.")]
-        public int ReservaId { get; set; }
-
-        [Range(1, int.MaxValue, ErrorMessage = "Selecciona un método de pago.")]
-        public int MetodoPagoId { get; set; }
-
-        [PositiveMoney(ErrorMessage = "El monto debe ser mayor que cero y tener máximo dos decimales.")]
-        public decimal Monto { get; set; }
-    }
-
-    public sealed class ReturnInput
-    {
-        [Range(1, int.MaxValue, ErrorMessage = "Crea primero una reserva.")]
-        public int DetalleId { get; set; }
-
-        [Required]
-        public string Estado { get; set; } = "Bueno";
     }
 
     public sealed class ReservationSummary

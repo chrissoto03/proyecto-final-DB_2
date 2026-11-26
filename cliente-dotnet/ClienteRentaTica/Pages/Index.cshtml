@@ -112,53 +112,6 @@
 
                     <button class="button primary" type="submit">Crear reserva</button>
                 </form>
-                @if (Model.LastReservationId is not null)
-                {
-                    <p class="hint">Última reserva: <strong>@Model.LastReservationId</strong> · detalle: <strong>@Model.LastDetailId</strong></p>
-                }
-            </article>
-
-            <article class="card workflow-card">
-                <span class="step">03 · 04</span>
-                <h2>Registrar pago</h2>
-                <p>El importe sugerido corresponde al saldo pendiente de la última reserva.</p>
-                <form method="post" asp-page-handler="Pagar" class="form-grid">
-                    <label asp-for="Pago.ReservaId">Reserva ID</label>
-                    <input asp-for="Pago.ReservaId" type="number" min="1" />
-                    <span asp-validation-for="Pago.ReservaId" class="validation"></span>
-
-                    <label asp-for="Pago.MetodoPagoId">Método de pago</label>
-                    <select asp-for="Pago.MetodoPagoId">
-                        @foreach (var metodo in Model.MetodosPago)
-                        {
-                            <option value="@metodo.MetodoPagoId">@metodo.Nombre</option>
-                        }
-                    </select>
-                    <span asp-validation-for="Pago.MetodoPagoId" class="validation"></span>
-
-                    <label asp-for="Pago.Monto">Monto</label>
-                    <input asp-for="Pago.Monto" type="number" min="0.01" step="0.01" />
-                    <span asp-validation-for="Pago.Monto" class="validation"></span>
-                    <button class="button secondary" type="submit">Registrar pago</button>
-                </form>
-            </article>
-
-            <article class="card workflow-card">
-                <span class="step">04 · 04</span>
-                <h2>Devolver equipo</h2>
-                <p>El ID de detalle se completa al crear la reserva. “Bueno” devuelve el equipo a Disponible.</p>
-                <form method="post" asp-page-handler="Devolver" class="form-grid">
-                    <label asp-for="Devolucion.DetalleId">Detalle de reserva ID</label>
-                    <input asp-for="Devolucion.DetalleId" type="number" min="1" />
-                    <span asp-validation-for="Devolucion.DetalleId" class="validation"></span>
-                    <label asp-for="Devolucion.Estado">Estado al devolver</label>
-                    <select asp-for="Devolucion.Estado">
-                        <option value="Bueno">Bueno</option>
-                        <option value="Averiado">Averiado</option>
-                        <option value="Perdido">Perdido</option>
-                    </select>
-                    <button class="button secondary" type="submit">Registrar devolución</button>
-                </form>
             </article>
 
             <article class="card workflow-card">
@@ -220,7 +173,7 @@
                             <div class="reservation-item-heading">
                                 <div>
                                     <span class="reservation-id">Reserva #@reserva.ReservaId</span>
-                                    <h3>@reserva.Cliente</h3>
+                                    <h3>@reserva.Cliente</h3><a asp-page="/Reserva" asp-route-id="@reserva.ReservaId" class="button ghost">Ver detalle</a>
                                 </div>
                                 <span class="status-badge status-@reserva.EstadoCss">@reserva.Estado</span>
                             </div>
@@ -264,6 +217,7 @@
             anticipada.hidden = esWalkin;
             walkin.hidden = !esWalkin;
         };
+        if (!tipo) return;
         tipo.addEventListener('change', actualizar);
         actualizar();
     })();

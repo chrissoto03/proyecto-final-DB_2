@@ -18,13 +18,20 @@ BEGIN
         IF @estado_devolucion IS NULL OR @estado_devolucion NOT IN ('Bueno','Averiado','Perdido')
             THROW 50003,'Estado de devolucion invalido.',1;
         BEGIN TRANSACTION;
-        DECLARE @reserva_id INT,@equipo_id INT,@devuelta DATETIME;
-        SELECT @reserva_id=d.reserva_id,@equipo_id=d.equipo_id,@devuelta=d.fecha_hora_devolucion
+        DECLARE @reserva_id INT,@equipo_id INT,@devuelta DATETIME,@entrega DATETIME,@estado VARCHAR(20);
+        -- Serialize returns for the same reservation before locking individual details.
+        SELECT @reserva_id=r.reserva_id,@estado=r.estado
+        FROM renta.Reserva r WITH(UPDLOCK,HOLDLOCK)
+        WHERE r.negocio_id=@negocio_id AND r.reserva_id=(
+            SELECT reserva_id FROM renta.DetalleReserva WHERE detalle_id=@detalle_id);
+        IF @reserva_id IS NULL THROW 50001,'El detalle no existe en el negocio.',1;
+        SELECT @reserva_id=d.reserva_id,@equipo_id=d.equipo_id,@devuelta=d.fecha_hora_devolucion,@entrega=d.fecha_hora_entrega
         FROM renta.DetalleReserva d WITH(UPDLOCK,HOLDLOCK)
         JOIN renta.Reserva r ON r.reserva_id=d.reserva_id
         WHERE d.detalle_id=@detalle_id AND r.negocio_id=@negocio_id;
         IF @reserva_id IS NULL THROW 50001,'El detalle no existe en el negocio.',1;
         IF @devuelta IS NOT NULL THROW 50004,'El equipo ya fue devuelto.',1;
+        IF @estado<>'En curso' OR @entrega IS NULL THROW 50004,'Solo se puede devolver un equipo entregado de una reserva en curso.',1;
         UPDATE renta.DetalleReserva SET fecha_hora_devolucion=GETDATE(),estado_equipo_devolucion=@estado_devolucion
         WHERE detalle_id=@detalle_id;
         EXEC sys.sp_set_session_context @key=N'usuario_actual',@value=@usuario_id;

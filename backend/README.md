@@ -38,9 +38,9 @@ Las reglas de reserva, pago, disponibilidad, estados y devolución siguen en SQL
 1. Ejecuta `database/05_tests/13_preparar_flujo_api.sql` una vez en SSMS. Guarda los IDs que devuelve (en especial `cliente_id`) y las credenciales temporales.
 2. Inicia el API con `npm.cmd start`; confirma `http://localhost:3000/health`.
 3. Abre `cliente-dotnet/ClienteRentaTica.sln` en Visual Studio y pulsa F5. Inicia sesión con el operador temporal.
-4. En **Nueva reserva**, selecciona el cliente y `FLUJO-001`, usa `Walk-in` y conserva la fecha final sugerida; la API asigna el inicio a su hora actual. Crea la reserva. Anota `reserva_id`, `detalle_id` y `monto_final` que aparecen en la respuesta.
-5. En **Registrar pago**, usa ese `reserva_id`, el método `Efectivo` y el monto final. La respuesta debe mostrar el pago registrado.
-6. En **Devolver equipo**, usa el `detalle_id` y estado `Bueno`. La respuesta confirma la devolución; el equipo vuelve a Disponible y la reserva pasa a Completada.
+4. En **Nueva reserva**, selecciona cliente, FLUJO-001 y Walk-in. Al crearla se abre su ficha.
+5. En la ficha registra el pago por el saldo pendiente usando Efectivo.
+6. Devuelve FLUJO-001 desde su ficha con condición Bueno. El equipo vuelve a Disponible y la reserva pasa a Completada.
 7. Revisa **Consultar equipos** y **Reporte por categoría**.
 8. Detén el cliente y el API; en SSMS ejecuta `database/05_tests/14_limpiar_flujo_api.sql`.
 

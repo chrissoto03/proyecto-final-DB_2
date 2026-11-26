@@ -1,0 +1,57 @@
+@page "/reservas/{id:int}"
+@model ClienteRentaTica.Pages.ReservaModel
+@using static ClienteRentaTica.Pages.ReservaModel
+@{ Layout = null; }
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Reserva #@Model.Id · RentaTica</title><link rel="stylesheet" href="~/css/site.css" /></head>
+<body><main class="shell">
+<header class="hero"><div><p class="eyebrow">RentaTica</p><h1>Reserva #@Model.Id</h1></div><a asp-page="/Index" class="button ghost">Volver a reservas</a><a asp-page="/Reserva" asp-route-id="@Model.Id" class="button ghost">Actualizar ficha</a></header>
+@if (Model.Error is not null) { <div class="notice error" role="alert">@Model.Error</div> }
+@if (Model.Notice is not null) { <div class="notice success" role="status">@Model.Notice</div> }
+@if (Model.Loaded)
+{
+    var r = Model.Header;
+    <section class="card"><h2>@Text(r, "cliente")</h2><p>@Text(r, "tipo_reserva") · <strong>@Text(r, "estado")</strong></p>
+    <div class="reservation-info">
+    <div><span>Inicio</span><strong>@Date(r, "fecha_inicio")</strong></div><div><span>Fin previsto</span><strong>@Date(r, "fecha_fin")</strong></div>
+    <div><span>Total</span><strong>@Money(r, "monto_final").ToString("N2")</strong></div><div><span>Total pagado</span><strong>@Money(r, "total_pagado").ToString("N2")</strong></div><div><span>Saldo</span><strong>@Money(r, "saldo").ToString("N2")</strong></div>
+    </div></section>
+    @if (Model.CanPay)
+    {
+        <section class="card"><h2>Registrar abono o pago total</h2><p>El monto sugerido cubre el saldo. Puedes reducirlo para registrar un abono.</p>
+        <form method="post" asp-page-handler="Pagar" asp-route-id="@Model.Id" class="form-grid">
+        <label asp-for="Metodo">Método de pago</label><select asp-for="Metodo" required><option value="">Selecciona un método</option>@foreach (var m in Model.Methods) { <option value="@Text(m, "metodo_pago_id")">@Text(m, "nombre")</option> }</select>
+        <label asp-for="Monto">Monto recibido</label><input id="Monto" name="Monto" value="@Model.Monto.ToString(System.Globalization.CultureInfo.InvariantCulture)" type="number" min="0.01" step="0.01" required /><button type="submit" class="button primary">Registrar pago</button>
+        </form></section>
+    }
+    <section class="card"><h2>Equipos</h2>
+    @foreach (var d in Model.Rows("detalles"))
+    {
+        <article class="reservation-item"><h3>@Text(d, "codigo_interno") · @Text(d, "categoria")</h3>
+        <p>@(Has(d, "fecha_hora_devolucion") ? "Devuelto" : Has(d, "fecha_hora_entrega") ? "Entregado" : "Pendiente de entrega") · Tarifa: @Money(d, "tarifa_aplicada").ToString("N2")</p>
+        <p>Entrega: @Date(d, "fecha_hora_entrega") · Devolución: @Date(d, "fecha_hora_devolucion") · Condición: @Text(d, "estado_equipo_devolucion")</p>
+        @if (Model.CanReturn(d))
+        {
+            <form method="post" asp-page-handler="Devolver" asp-route-id="@Model.Id" class="form-grid">
+            <input type="hidden" name="detalleId" value="@Text(d, "detalle_id")" />
+            <label>Condición al devolver @Text(d, "codigo_interno")<select name="estado"><option>Bueno</option><option>Averiado</option><option>Perdido</option></select></label>
+            @if (Model.Rows("detalles").Count(x => !Has(x, "fecha_hora_devolucion")) == 1 && Model.Rows("depositos").Any(x => !Has(x, "fecha_devolucion")))
+            {
+                <p>Último equipo: indica cómo se liquida el depósito. Ambos montos deben sumar el depósito cobrado.</p>
+                <label>Monto devuelto<input name="devuelto" type="number" min="0" step="0.01" required /></label>
+                <label>Monto retenido<input name="retencion" type="number" min="0" step="0.01" required /></label>
+            }
+            <button type="submit" class="button secondary">Devolver @Text(d, "codigo_interno")</button></form>
+        }</article>
+    }</section>
+    <section class="card"><h2>Pagos recibidos</h2>
+    @if (!Model.Rows("pagos").Any()) { <p>No hay pagos registrados.</p> }
+    @foreach (var p in Model.Rows("pagos")) { <p>@Date(p, "fecha_pago") · @Text(p, "metodo_pago") · @Money(p, "monto").ToString("N2") · @Text(p, "estado")</p> }
+    </section>
+    <section class="card"><h2>Depósito de garantía</h2>
+    @if (!Model.Rows("depositos").Any()) { <p>No hay depósito registrado.</p> }
+    @foreach (var p in Model.Rows("depositos")) { <p>Cobrado: @Money(p, "monto_cobrado").ToString("N2") · Devuelto: @Text(p, "monto_devuelto") · Retenido: @Text(p, "monto_retencion") · Liquidación: @Date(p, "fecha_devolucion")</p> }
+    </section>
+}
+</main></body></html>
