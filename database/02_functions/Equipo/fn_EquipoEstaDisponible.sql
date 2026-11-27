@@ -24,7 +24,7 @@ BEGIN
 
     IF EXISTS (SELECT 1 FROM renta.Equipo
                WHERE equipo_id = @equipo_id
-                 AND estado NOT IN ('Averiado', 'Fuera de servicio'))
+                 AND estado NOT IN ('Averiado', 'Mantenimiento', 'Fuera de servicio'))
        AND NOT EXISTS (SELECT 1
                        FROM renta.DetalleReserva dr
                        INNER JOIN renta.Reserva r ON r.reserva_id = dr.reserva_id

@@ -45,3 +45,6 @@ Las reglas de reserva, pago, disponibilidad, estados y devolución siguen en SQL
 8. Detén el cliente y el API; en SSMS ejecuta `database/05_tests/14_limpiar_flujo_api.sql`.
 
 También puedes probar las mismas rutas en Swagger `/docs`, primero usando `POST /api/auth/login` y luego autorizando con el JWT. No compartas el token.
+
+- `GET /api/equipos/disponibilidad?fecha_inicio=2026-12-01T08:00:00&fecha_fin=2026-12-01T12:00:00`: equipos libres para el rango, importe estimado y tarifa de garantía de categoría. Usa `usp_Equipo_ConsultarDisponibilidad`; el negocio se toma del JWT. Requiere Administrador u Operador. Las fechas siguen el formato local sin zona usado por el formulario de reserva. Consultar no bloquea equipos; crear la reserva vuelve a validar dentro de la transacción.
+- Prueba de solo lectura: `node tests/disponibilidad.cjs`; requiere una reserva anticipada futura existente y configuración SQL del API. No reinicia escenarios ni modifica datos.

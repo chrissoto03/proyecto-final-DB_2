@@ -135,6 +135,17 @@ public sealed class IndexModel(IHttpClientFactory httpClientFactory) : PageModel
         return await GetProtectedPageAsync("api/reportes/inventario", "Reporte de inventario completado.");
     }
 
+    public async Task<IActionResult> OnPostDisponibilidadAsync()
+    {
+        // Customer and equipment are not required to search a date range.
+        ModelState.Remove("Reserva.ClienteId");
+        ModelState.Remove("Reserva.EquipoId");
+        Reserva.EquipoId = 0;
+        await LoadReferenceDataAsync();
+        if (ErrorMessage is null) StatusMessage = $"{EquiposDisponibles.Count} equipos disponibles para el período indicado. Selecciona uno para crear la reserva.";
+        return Page();
+    }
+
     public async Task<IActionResult> OnPostCrearReservaAsync()
     {
         if (HasErrorsFor(nameof(Reserva)))
@@ -238,7 +249,18 @@ public sealed class IndexModel(IHttpClientFactory httpClientFactory) : PageModel
         if (!IsAuthenticated) return;
 
         Clientes = await LoadListAsync<CustomerOption>("api/clientes");
-        EquiposDisponibles = await LoadListAsync<EquipmentOption>("api/equipos?estado=Disponible");
+        if (Reserva.TipoReserva == "Anticipada")
+        {
+            if (Reserva.FechaInicio == default || Reserva.FechaFin <= Reserva.FechaInicio)
+                ErrorMessage ??= "Indica un rango válido para consultar la disponibilidad.";
+            else
+            {
+                var inicio = Uri.EscapeDataString(Reserva.FechaInicio.ToString("yyyy-MM-ddTHH:mm:ss", System.Globalization.CultureInfo.InvariantCulture));
+                var fin = Uri.EscapeDataString(Reserva.FechaFin.ToString("yyyy-MM-ddTHH:mm:ss", System.Globalization.CultureInfo.InvariantCulture));
+                EquiposDisponibles = await LoadListAsync<EquipmentOption>($"api/equipos/disponibilidad?fecha_inicio={inicio}&fecha_fin={fin}");
+            }
+        }
+        else EquiposDisponibles = await LoadListAsync<EquipmentOption>("api/equipos?estado=Disponible");
         Reservas = await LoadListAsync<ReservationSummary>("api/reservas");
     }
 
@@ -375,6 +397,7 @@ public sealed class IndexModel(IHttpClientFactory httpClientFactory) : PageModel
     public sealed class EquipmentOption
     {
         [JsonPropertyName("equipo_id")] public int EquipoId { get; set; }
+        [JsonPropertyName("monto_estimado")] public decimal? MontoEstimado { get; set; }
         [JsonPropertyName("codigo_interno")] public string Codigo { get; set; } = "";
         [JsonPropertyName("descripcion")] public string? Descripcion { get; set; }
         [JsonPropertyName("categoria")] public string Categoria { get; set; } = "";

@@ -28,7 +28,7 @@ RETURN
     INNER JOIN renta.CategoriaEquipo c ON c.categoria_id = e.categoria_id
     WHERE c.negocio_id = @negocio_id
       AND (@categoria_id IS NULL OR e.categoria_id = @categoria_id)
-      AND e.estado NOT IN ('Averiado', 'Fuera de servicio')
+      AND e.estado NOT IN ('Averiado', 'Mantenimiento', 'Fuera de servicio')
       AND NOT EXISTS (SELECT 1
                       FROM renta.DetalleReserva dr
                       INNER JOIN renta.Reserva r ON r.reserva_id = dr.reserva_id

@@ -15,11 +15,11 @@
     <section class="card"><h2>@Text(r, "cliente")</h2><p>@Text(r, "tipo_reserva") · <strong>@Text(r, "estado")</strong></p>
     <div class="reservation-info">
     <div><span>Inicio</span><strong>@Date(r, "fecha_inicio")</strong></div><div><span>Fin previsto</span><strong>@Date(r, "fecha_fin")</strong></div>
-    <div><span>Total</span><strong>@Money(r, "monto_final").ToString("N2")</strong></div><div><span>Total pagado</span><strong>@Money(r, "total_pagado").ToString("N2")</strong></div><div><span>Saldo</span><strong>@Money(r, "saldo").ToString("N2")</strong></div>
+    <div><span>Total del alquiler</span><strong>@Money(r, "monto_final").ToString("N2")</strong></div><div><span>Abonos al alquiler</span><strong>@Money(r, "total_pagado").ToString("N2")</strong></div><div><span>Saldo del alquiler</span><strong>@Money(r, "saldo").ToString("N2")</strong></div>
     </div></section>
     @if (Model.CanPay)
     {
-        <section class="card"><h2>Registrar abono o pago total</h2><p>El monto sugerido cubre el saldo. Puedes reducirlo para registrar un abono.</p>
+        <section class="card"><h2>Registrar abono o pago total</h2><p>Este pago corresponde al alquiler, no a la garantía. El monto sugerido cubre el saldo; puedes reducirlo para registrar un abono.</p>
         <form method="post" asp-page-handler="Pagar" asp-route-id="@Model.Id" class="form-grid">
         <label asp-for="Metodo">Método de pago</label><select asp-for="Metodo" required><option value="">Selecciona un método</option>@foreach (var m in Model.Methods) { <option value="@Text(m, "metodo_pago_id")">@Text(m, "nombre")</option> }</select>
         <label asp-for="Monto">Monto recibido</label><input id="Monto" name="Monto" value="@Model.Monto.ToString(System.Globalization.CultureInfo.InvariantCulture)" type="number" min="0.01" step="0.01" required /><button type="submit" class="button primary">Registrar pago</button>
@@ -50,7 +50,7 @@
     @foreach (var p in Model.Rows("pagos")) { <p>@Date(p, "fecha_pago") · @Text(p, "metodo_pago") · @Money(p, "monto").ToString("N2") · @Text(p, "estado")</p> }
     </section>
     <section class="card"><h2>Depósito de garantía</h2>
-    @if (!Model.Rows("depositos").Any()) { <p>No hay depósito registrado.</p> }
+    @if (!Model.Rows("depositos").Any()) { <p>No hay depósito de garantía registrado. Los abonos al alquiler no crean una garantía. Su registro todavía no está disponible en esta aplicación.</p> }
     @foreach (var p in Model.Rows("depositos")) { <p>Cobrado: @Money(p, "monto_cobrado").ToString("N2") · Devuelto: @Text(p, "monto_devuelto") · Retenido: @Text(p, "monto_retencion") · Liquidación: @Date(p, "fecha_devolucion")</p> }
     </section>
 }

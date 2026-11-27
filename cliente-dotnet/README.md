@@ -64,3 +64,13 @@ Ejecuta en SSMS `database/03_procedures/Equipo/transactions/usp_Equipo_Devolver.
 No se hizo inspección visual en navegador ni prueba de carga concurrente. Queda pendiente verificar depósitos con retenciones, condiciones Averiado/Perdido y el ciclo completo de reservas anticipadas.
 
 La prueba reproducible está en `backend/tests/ficha.cjs`: requiere el escenario 13 sin reservas activas sobre FLUJO-001/002, el API en 3000 y el cliente en 5181 (`dotnet run --project cliente-dotnet/ClienteRentaTica --urls http://localhost:5181`). Ejecuta `node backend/tests/ficha.cjs` desde la raíz. Crea dos reservas y las conserva para inspección; no reinicia ni limpia automáticamente el escenario. Revisa los datos antes de ejecutar los scripts 13 o 14.
+
+## Disponibilidad para reservas anticipadas
+
+En **Nueva reserva**, selecciona **Anticipada**, indica inicio y fin y pulsa **Consultar disponibilidad**. Luego selecciona el equipo y crea la reserva. El listado considera el período, aunque el equipo figure como Reservado por otro alquiler. Si cambias el rango, vuelve a consultar. El importe mostrado es una estimación del alquiler; SQL vuelve a comprobar disponibilidad y calcular el importe al guardar.
+
+La ficha distingue **Total del alquiler**, **Abonos al alquiler** y **Saldo del alquiler**. Un abono no crea ni liquida un depósito de garantía. Por ahora se pueden consultar depósitos existentes y liquidarlos al devolver; todavía no existe una operación de registro de garantías en la aplicación.
+
+Instalación SQL de esta entrega: ejecutar `database/02_functions/Equipo/fn_EquipoEstaDisponible.sql` y `database/02_functions/Equipo/fn_EquiposDisponibles.sql`. Ambas excluyen equipos en mantenimiento, igual que la creación de reservas. Ya se instalaron localmente. No se modificaron reservas ni pagos del usuario.
+
+Verificación: compilación sin errores, sintaxis del API, prueba de disponibilidad contra SQL real (`node backend/tests/disponibilidad.cjs`) y formularios Razor por HTTP con sesión y antiforgery. Se verificaron solapamiento, rango libre con estimación, fechas inválidas, rol no autorizado y negocio inexistente. No se hizo inspección visual ni se implementaron todavía entrega, modificación, cancelación o atrasos de anticipadas.

@@ -12,6 +12,19 @@ paths:
       responses:
         '200': { description: API y base de datos disponibles }
         '503': { description: API iniciada sin conexión a base de datos }
+  /api/equipos/disponibilidad:
+    get:
+      summary: Equipos disponibles por rango y alquiler estimado
+      description: Fechas locales del negocio, sin sufijo de zona horaria. La creación vuelve a validar disponibilidad dentro de su transacción.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: query, name: fecha_inicio, required: true, schema: { type: string, example: '2026-12-01T08:00:00' } }
+        - { in: query, name: fecha_fin, required: true, schema: { type: string, example: '2026-12-01T12:00:00' } }
+      responses:
+        '200': { description: Lista datos con equipos disponibles y monto_estimado del alquiler; monto_deposito es la tarifa de garantía de la categoría, no un cobro registrado }
+        '400': { description: Rango inválido }
+        '401': { description: Sesión inválida }
+        '403': { description: Rol o negocio no autorizado }
   /api/auth/login:
     post:
       summary: Inicia sesión y devuelve un JWT

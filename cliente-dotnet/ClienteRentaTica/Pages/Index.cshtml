@@ -83,16 +83,6 @@
                     </select>
                     <span asp-validation-for="Reserva.ClienteId" class="validation"></span>
 
-                    <label asp-for="Reserva.EquipoId">Equipo disponible</label>
-                    <select asp-for="Reserva.EquipoId">
-                        <option value="0">Selecciona un equipo</option>
-                        @foreach (var equipo in Model.EquiposDisponibles)
-                        {
-                            <option value="@equipo.EquipoId">@equipo.Codigo · @equipo.Categoria</option>
-                        }
-                    </select>
-                    <span asp-validation-for="Reserva.EquipoId" class="validation"></span>
-
                     <label asp-for="Reserva.TipoReserva">Tipo</label>
                     <select asp-for="Reserva.TipoReserva">
                         <option value="Walk-in">Walk-in · empieza ahora</option>
@@ -109,6 +99,17 @@
                     <label asp-for="Reserva.FechaFin">Fin del alquiler</label>
                     <input asp-for="Reserva.FechaFin" type="datetime-local" />
                     <span asp-validation-for="Reserva.FechaFin" class="validation"></span>
+
+                    <button class="button ghost" type="submit" asp-page-handler="Disponibilidad" formnovalidate>Consultar disponibilidad</button>
+                    <p class="hint">Si cambias las fechas o el tipo, consulta de nuevo antes de elegir equipo. La disponibilidad se vuelve a validar al crear la reserva.</p>                    <label asp-for="Reserva.EquipoId">Equipo disponible</label>
+                    <select asp-for="Reserva.EquipoId">
+                        <option value="0">Selecciona un equipo</option>
+                        @foreach (var equipo in Model.EquiposDisponibles)
+                        {
+                            <option value="@equipo.EquipoId">@equipo.Codigo · @equipo.Categoria @(equipo.MontoEstimado is decimal monto ? $"· Alquiler estimado: {monto:N2}" : "")</option>
+                        }
+                    </select>
+                    <span asp-validation-for="Reserva.EquipoId" class="validation"></span>
 
                     <button class="button primary" type="submit">Crear reserva</button>
                 </form>
@@ -219,6 +220,11 @@
         };
         if (!tipo) return;
         tipo.addEventListener('change', actualizar);
+        const invalidarEquipos = () => {
+            const equipos = document.getElementById('Reserva_EquipoId');
+            equipos.replaceChildren(new Option('Consulta la disponibilidad para estas fechas', '0'));
+        };
+        [tipo, document.getElementById('Reserva_FechaInicio'), document.getElementById('Reserva_FechaFin')].forEach(input => input.addEventListener('change', invalidarEquipos));
         actualizar();
     })();
 </script>
