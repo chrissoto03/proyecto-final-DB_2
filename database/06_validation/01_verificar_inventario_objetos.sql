@@ -1,4 +1,4 @@
-/* Inventario fuente del proyecto: 77 SP (incluye 7 transaccionales), 6 funciones y 2 triggers.
+/* Inventario fuente del proyecto: 78 SP (incluye 8 transaccionales), 6 funciones y 2 triggers.
    Ejecutar despues de instalar los scripts de database/02_functions, 03_procedures y 04_triggers.
    Detecta nombres ausentes y objetos inesperados dentro del esquema renta.
 */
@@ -74,6 +74,7 @@ INSERT INTO @Esperados(tipo,nombre) VALUES
     ('PROCEDURE', N'usp_Reserva_Proximas'),
     ('PROCEDURE', N'usp_Reserva_Crear'),
     ('PROCEDURE', N'usp_Reserva_Entregar'),
+    ('PROCEDURE', N'usp_Reserva_Modificar'),
     ('PROCEDURE', N'usp_Reserva_Eliminar'),
     ('PROCEDURE', N'usp_Rol_Crear'),
     ('PROCEDURE', N'usp_Rol_Eliminar'),
@@ -115,5 +116,5 @@ FROM @Actuales a LEFT JOIN @Esperados e ON e.tipo=a.tipo AND e.nombre=a.nombre W
 IF EXISTS(SELECT 1 FROM @Esperados e LEFT JOIN @Actuales a ON a.tipo=e.tipo AND a.nombre=e.nombre WHERE a.nombre IS NULL)
    OR EXISTS(SELECT 1 FROM @Actuales a LEFT JOIN @Esperados e ON e.tipo=a.tipo AND e.nombre=a.nombre WHERE e.nombre IS NULL)
     THROW 51001,'El catalogo de objetos de SQL Server no coincide con el inventario fuente.',1;
-PRINT 'Inventario SQL coincide: 77 procedimientos, 6 funciones y 2 triggers.';
+PRINT 'Inventario SQL coincide: 78 procedimientos, 6 funciones y 2 triggers.';
 GO

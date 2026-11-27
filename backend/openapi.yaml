@@ -194,6 +194,59 @@ paths:
         '401': { description: Sesión inválida }
         '403': { description: Rol o condiciones de entrega no válidos }
         '404': { description: Reserva no encontrada en el negocio }
+  /api/reservas/{id}/modificacion/equipos:
+    get:
+      summary: Catálogo de equipos del negocio para modificar una reserva
+      description: La disponibilidad del nuevo período se verifica al revisar y confirmar. Incluye equipos actualmente reservados para poder conservarlos.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, minimum: 1 } }
+      responses:
+        '200': { description: Catálogo datos }
+        '404': { description: Reserva no encontrada en el negocio }
+  /api/reservas/{id}/modificacion/revisar:
+    post:
+      summary: Revisa fechas, equipos y precio sin guardar
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, minimum: 1 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [fecha_inicio, fecha_fin, equipo_ids]
+              properties:
+                fecha_inicio: { type: string, example: '2027-01-10T08:00:00.000', description: Hora local del negocio sin zona horaria }
+                fecha_fin: { type: string, example: '2027-01-10T12:00:00.000' }
+                equipo_ids: { type: array, minItems: 1, maxItems: 20, uniqueItems: true, items: { type: integer, minimum: 1 } }
+      responses:
+        '200': { description: Resumen con total_anterior, total_nuevo, abonos, saldo, cambios; equipos; propuesta y confirmacion firmada válida por 15 minutos }
+        '400': { description: Propuesta inválida }
+        '403': { description: Horario, estado, equipos o total no permiten modificación }
+        '404': { description: Reserva o equipo ajeno al negocio }
+  /api/reservas/{id}/modificacion/confirmar:
+    post:
+      summary: Confirma exactamente la propuesta revisada
+      description: Revalida dentro de una transacción. No usa importes ni equipos del cuerpo fuera del token firmado. Si cambian la reserva, el precio o los pagos devuelve 409 con una nueva revisión cuando es válida. Una confirmación vencida exige volver a revisar.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, minimum: 1 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [confirmacion]
+              properties:
+                confirmacion: { type: string }
+      responses:
+        '200': { description: Modificación guardada o propuesta sin cambios conservada }
+        '409': { description: Requiere revisar y confirmar otra vez }
+        '403': { description: Ya no se cumplen las reglas de modificación }
+        '404': { description: Reserva no encontrada en el negocio }
 components:
   securitySchemes:
     bearerAuth:

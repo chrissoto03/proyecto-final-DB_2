@@ -352,3 +352,13 @@ footer a { color: var(--muted); text-underline-offset: 3px; }
   .reservation-toolbar { align-items: stretch; }
   footer { flex-direction: column; }
 }
+
+.equipment-choices { border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin: 12px 0; min-width: 0; }
+.equipment-choices legend { padding: 0 8px; font-weight: 600; }
+.equipment-choice { display: flex; align-items: center; gap: 14px; padding: 14px 8px; border-bottom: 1px solid var(--line); cursor: pointer; }
+.equipment-choice:last-child { border-bottom: 0; }
+.equipment-choice input[type="checkbox"] { width: 20px; height: 20px; min-height: 20px; margin: 0; flex: 0 0 20px; accent-color: var(--green); }
+.equipment-choice span { display: grid; gap: 4px; }
+.equipment-choice small { font-weight: 400; color: var(--muted); }
+#revision-modificacion { scroll-margin-top: 24px; }
+#revision-modificacion[hidden] { display: none; }

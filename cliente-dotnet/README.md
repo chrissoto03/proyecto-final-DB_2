@@ -95,3 +95,20 @@ Pruebas: `node backend/tests/entrega.cjs` crea un negocio temporal independiente
 Para incluir el formulario Razor: inicia el cliente temporal con la variable `RentaTicaApi__BaseUrl=http://127.0.0.1:3001/` y URL `http://localhost:5182`; ejecuta el test con `TEST_API_PORT=3001` y `CLIENT_URL=http://localhost:5182`. La prueba inicia y detiene su propio API. Se verificó el formulario real por HTTP con sesión y antiforgery, además de compilar; no se hizo una nueva inspección visual en esta entrega.
 
 La reserva futura del usuario se conservó, sin adelantar fechas ni completar pagos. Modificación, cancelación y cargos por atraso quedan para entregas posteriores.
+
+## Modificar una reserva anticipada
+
+1. Reinicia el API y ejecuta el cliente con F5. Abre una reserva anticipada futura desde **Ver detalle**.
+2. Pulsa **Modificar fechas y equipos**. Solo aparece para Pendiente/Confirmada, antes del inicio y sin equipos entregados.
+3. Ajusta fechas y marca los equipos por código. Los equipos del catálogo no están necesariamente libres para ese rango: **Revisar cambios y precio** lo comprueba excluyendo la propia reserva.
+4. Compara total anterior, nuevo total, abonos y saldo. La revisión no guarda ni aparta equipos. Si fechas y equipos no cambian, conserva el precio acordado; en caso contrario usa las tarifas actuales.
+5. Pulsa **Confirmar modificación**. Si cambiaron los pagos, el precio o la reserva, verás una revisión actualizada y tendrás que confirmar otra vez. Si otra reserva ocupa un equipo o ya pasó el inicio, se rechaza y conserva los datos originales.
+6. Al guardar regresa a la ficha: saldo positivo queda Pendiente y saldo cero Confirmada. No se admiten totales inferiores a los abonos. El depósito queda separado e intacto.
+
+No se permite modificar después del inicio original ni mover el nuevo inicio al pasado. Se conservan los IDs de detalle de los equipos que permanecen; el inventario de equipos retirados considera sus otras reservas y entregas. Las confirmaciones duran 15 minutos y pertenecen a una reserva, un negocio y un usuario; no se guardan en una variable compartida de sesión.
+
+SQL: instalar `database/03_procedures/Reserva/transactions/usp_Reserva_Modificar.sql` (ya instalado localmente). El inventario pasa a 78 SP, 6 funciones y 2 triggers. No se requiere recrear tablas o reiniciar el escenario 13.
+
+Verificación: `node backend/tests/modificacion.cjs` crea y elimina únicamente su propio negocio temporal. Cubre revisión sin escrituras, precio conservado sin cambios, autorreserva excluida, equipos ocupados, tarifas y abonos que cambian entre pasos, dos confirmaciones simultáneas, estados y horario, equipos ajenos, token alterado, total menor que abonos y rollback provocado después de escribir detalles. Se verificó el formulario Razor por HTTP, incluida la segunda confirmación por cambio de tarifa.
+
+Para incluir Razor en la prueba, inicia el cliente desde su carpeta con `RentaTicaApi__BaseUrl=http://127.0.0.1:3001/` y `--urls http://localhost:5182`; ejecuta el test con `TEST_API_PORT=3001` y `CLIENT_URL=http://localhost:5182`. El test inicia su API y lo cierra al terminar. Requiere permisos SQL para crear el escenario y el trigger de fallo controlado; este se crea dentro de una transacción que se revierte y se verifica que desaparece. No se hizo una nueva inspección visual en navegador en esta entrega.

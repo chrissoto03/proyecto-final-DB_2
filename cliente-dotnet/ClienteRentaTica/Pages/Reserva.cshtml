@@ -17,6 +17,8 @@
     <div><span>Inicio</span><strong>@Date(r, "fecha_inicio")</strong></div><div><span>Fin previsto</span><strong>@Date(r, "fecha_fin")</strong></div>
     <div><span>Total del alquiler</span><strong>@Money(r, "monto_final").ToString("N2")</strong></div><div><span>Abonos al alquiler</span><strong>@Money(r, "total_pagado").ToString("N2")</strong></div><div><span>Saldo del alquiler</span><strong>@Money(r, "saldo").ToString("N2")</strong></div>
     </div></section>
+    @if (Model.CanModify)
+    { <section class="card"><h2>Modificar la reserva</h2><p>Cambia fechas o equipos antes del inicio. Podrás revisar el nuevo precio y el saldo antes de confirmar.</p><a class="button ghost" asp-page="/ModificarReserva" asp-route-id="@Model.Id">Modificar fechas y equipos</a></section> }
     @if (Model.CanPay)
     {
         <section class="card"><h2>Registrar abono o pago total</h2><p>Este pago corresponde al alquiler, no a la garantía. El monto sugerido cubre el saldo; puedes reducirlo para registrar un abono.</p>

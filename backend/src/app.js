@@ -31,6 +31,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/equipos', equipoRoutes);
 app.use('/api/reportes', reportRoutes);
 app.use('/api', operationRoutes);
+app.use('/api', require('./routes/modificaciones'));
 app.use((_req, res) => res.status(404).json({ error: 'Ruta no encontrada.' }));
 
 app.use((error, _req, res, _next) => {

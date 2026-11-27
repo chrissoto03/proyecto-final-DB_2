@@ -54,3 +54,9 @@ También puedes probar las mismas rutas en Swagger `/docs`, primero usando `POST
 `POST /api/reservas/{reserva_id}/entrega` usa `usp_Reserva_Entregar`. Solo Administrador/Operador; negocio y usuario provienen del JWT. Entrega todos los equipos asignados sin aceptar IDs de equipo, fechas ni negocio del cuerpo. Exige Confirmada, saldo cero y horario SQL `[fecha_inicio, fecha_fin)`. Devuelve la ficha, cuyo encabezado agrega `hora_servidor` y cuyos detalles agregan `estado_equipo`. El depósito no cuenta como pago del alquiler.
 
 Prueba independiente con limpieza de sus propios datos: `node tests/entrega.cjs`. No reinicia el escenario api-flujo.
+
+### Modificación de anticipadas
+
+Rutas bajo `/api/reservas/{id}/modificacion`: `GET equipos`, `POST revisar` y `POST confirmar`. Requieren Administrador/Operador y negocio del JWT. `revisar` recibe fechas locales sin zona y equipo_ids; devuelve comparación de importes y confirmación firmada. `confirmar` recibe solo `confirmacion`; SQL recalcula y compara la versión antes de guardar. Un 409 puede incluir un nuevo resumen/token que debe mostrarse y confirmarse de nuevo. No reintentar automáticamente. Precio acordado sin cambios, pagos preservados y garantía separada.
+
+Prueba aislada: `node tests/modificacion.cjs`. No reinicia api-flujo ni modifica reservas del usuario. El transporte de fechas de estas rutas conserva la hora local almacenada en SQL, sin aplicar la zona horaria del proceso Node.

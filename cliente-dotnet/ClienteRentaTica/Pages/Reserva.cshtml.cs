@@ -17,6 +17,9 @@ public sealed class ReservaModel(IHttpClientFactory factory) : PageModel
     [BindProperty, ModelBinder(BinderType = typeof(FormMoneyBinder))] public decimal Monto { get; set; }
     [BindProperty] public int Metodo { get; set; }
     public bool Staff => HttpContext.Session.GetString("rentatica-user-role") is "Operador" or "Administrador";
+    public bool CanModify => AwaitingDelivery && Has(Header, "hora_servidor")
+        && Header.GetProperty("hora_servidor").GetDateTime() < Header.GetProperty("fecha_inicio").GetDateTime()
+        && Rows("detalles").All(d => !Has(d, "fecha_hora_entrega") && !Has(d, "fecha_hora_devolucion"));
     public bool CanPay => Loaded && Staff && Text(Header, "estado") != "Cancelada" && Money(Header, "saldo") > 0;
     public bool CanReturn(JsonElement item) => Staff && Text(Header, "estado") == "En curso" && Has(item, "fecha_hora_entrega") && !Has(item, "fecha_hora_devolucion");
     public bool AwaitingDelivery => Loaded && Staff && Text(Header, "tipo_reserva") == "Anticipada" && Text(Header, "estado") is "Pendiente" or "Confirmada";
@@ -56,7 +59,7 @@ public sealed class ReservaModel(IHttpClientFactory factory) : PageModel
         Id = id;
         if (!await Load()) return Page();
         Monto = Money(Header, "saldo");
-        Notice = resultado switch { "entrega" => "Equipos entregados. La reserva está en curso.", "pago" => "Pago registrado.", "devolucion" => "Devolución registrada.", _ => null };
+        Notice = resultado switch { "modificacion" => "Modificación guardada. Revisa las fechas, equipos y saldo actualizados.", "entrega" => "Equipos entregados. La reserva está en curso.", "pago" => "Pago registrado.", "devolucion" => "Devolución registrada.", _ => null };
         return Page();
     }
 

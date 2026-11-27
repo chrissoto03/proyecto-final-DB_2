@@ -1,0 +1,51 @@
+@page "/reservas/{id:int}/modificar"
+@model ClienteRentaTica.Pages.ModificarReservaModel
+@using static ClienteRentaTica.Pages.ReservaModel
+@{ Layout = null; }
+<!doctype html><html lang="es"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Modificar reserva #@Model.Id · RentaTica</title><link rel="stylesheet" href="~/css/site.css" asp-append-version="true" /></head>
+<body><main class="shell detail-shell">
+<header class="hero detail-hero"><div><p class="eyebrow">RentaTica · Reserva anticipada</p><h1>Modificar reserva #@Model.Id</h1></div><a class="button ghost" asp-page="/Reserva" asp-route-id="@Model.Id">Volver a la ficha</a></header>
+@if (Model.Error is not null) { <div class="notice error" role="alert">@Model.Error</div> }
+@if (Model.Editable)
+{
+    <section class="card"><h2>1. Fechas y equipos</h2><p>Puedes conservar equipos o seleccionar otros del negocio. Al revisar se comprueba su disponibilidad para el nuevo período, excluyendo esta misma reserva.</p>
+    <form method="post" asp-page-handler="Revisar" asp-route-id="@Model.Id" class="form-grid">
+    <label asp-for="Inicio">Nuevo inicio</label><input asp-for="Inicio" asp-format="{0:yyyy-MM-ddTHH:mm:ss.fff}" type="datetime-local" step="0.001" required />
+    <label asp-for="Fin">Nuevo fin</label><input asp-for="Fin" asp-format="{0:yyyy-MM-ddTHH:mm:ss.fff}" type="datetime-local" step="0.001" required />
+    <fieldset class="equipment-choices"><legend>Equipos de la reserva</legend>
+    @foreach (var e in Model.Catalogo)
+    {
+        var id = e.GetProperty("equipo_id").GetInt32();
+        <label class="equipment-choice"><input type="checkbox" name="Equipos" value="@id" checked="@Model.Equipos.Contains(id)" /><span><strong>@Text(e,"codigo_interno") · @Text(e,"categoria")</strong><small>Estado actual: @Text(e,"estado")</small></span></label>
+    }
+    </fieldset>
+    <button class="button primary" type="submit">Revisar cambios y precio</button></form></section>
+    @if (Model.Revision is System.Text.Json.JsonElement review)
+    {
+        var summary = review.GetProperty("resumen");
+        <section class="card" id="revision-modificacion" tabindex="-1"><span class="step">REVISIÓN ANTES DE GUARDAR</span><h2>2. Confirmar esta propuesta</h2>
+        <p>Inicio: <strong>@Date(summary,"fecha_inicio")</strong> · Fin: <strong>@Date(summary,"fecha_fin")</strong></p>
+        <div class="reservation-info">
+        <div><span>Total anterior</span><strong>@Money(summary,"total_anterior").ToString("N2")</strong></div>
+        <div><span>Nuevo total</span><strong>@Money(summary,"total_nuevo").ToString("N2")</strong></div>
+        <div><span>Abonos conservados</span><strong>@Money(summary,"abonos").ToString("N2")</strong></div>
+        <div><span>Nuevo saldo</span><strong>@Money(summary,"saldo").ToString("N2")</strong></div>
+        </div>
+        <ul>@foreach (var e in review.GetProperty("equipos").EnumerateArray()) { <li>@Text(e,"codigo_interno") · Alquiler: @Money(e,"tarifa").ToString("N2")</li> }</ul>
+        <p>@(summary.GetProperty("cambios").GetBoolean() ? "El nuevo precio usa las tarifas vigentes. La garantía se conserva por separado." : "No cambiaste fechas ni equipos: se conserva el precio acordado.")</p>
+        <p>Al guardar quedará <strong>@(Money(summary,"saldo")==0 ? "Confirmada" : "Pendiente")</strong>. Cambiar el formulario superior requiere revisar otra vez; este botón confirma únicamente la propuesta mostrada aquí.</p>
+        <form method="post" asp-page-handler="Confirmar" asp-route-id="@Model.Id">
+        <input asp-for="Confirmacion" type="hidden" />
+        <input type="hidden" name="Inicio" value="@Model.Inicio.ToString("yyyy-MM-ddTHH:mm:ss.fff")" /><input type="hidden" name="Fin" value="@Model.Fin.ToString("yyyy-MM-ddTHH:mm:ss.fff")" />
+        @foreach (var id in Model.Equipos) { <input type="hidden" name="Equipos" value="@id" /> }
+        <button class="button primary" type="submit">Confirmar modificación</button>
+        </form></section>
+    }
+}
+</main><script>
+const review = document.getElementById('revision-modificacion');
+if (review) { review.focus({preventScroll:true}); review.scrollIntoView({block:'start'}); }
+// An edited proposal must be reviewed again before it can be confirmed.
+const editForm = document.querySelector('form');
+if (review && editForm) editForm.addEventListener('input', () => { review.hidden = true; });
+</script></body></html>
