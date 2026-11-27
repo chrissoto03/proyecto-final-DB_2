@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>RentaTica | Gestión de alquileres</title>
-    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
 <main class="shell">
@@ -20,7 +20,7 @@
             <h1>RentaTica</h1>
             <p class="subtitle">Reservas, inventario y atención al cliente</p>
         </div>
-        <a class="api-pill" href="http://localhost:3000/docs" target="_blank" rel="noreferrer">Abrir Swagger</a>
+        <span class="workspace-label">Panel del negocio</span>
     </header>
 
     @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
@@ -36,7 +36,7 @@
     {
         <section class="card login-card">
             <div class="section-heading">
-                <span class="step">01</span>
+                <span class="step">BIENVENIDO</span>
                 <div>
                     <h2>Iniciar sesión</h2>
                     <p>Inicia sesión para administrar las reservas de tu negocio.</p>
@@ -69,7 +69,7 @@
 
         <section class="workflow-grid">
             <article class="card workflow-card">
-                <span class="step">02 · 04</span>
+                <span class="step">ATENCIÓN AL CLIENTE</span>
                 <h2>Nueva reserva</h2>
                 <p>Selecciona cliente, equipo y horario. Walk-in comienza al registrar la reserva.</p>
                 <form method="post" asp-page-handler="CrearReserva" class="form-grid">
@@ -212,19 +212,19 @@
 
     @if (!string.IsNullOrWhiteSpace(Model.ResponseJson))
     {
-        <section class="card response">
+        <details class="card response"><summary>Ver datos de la consulta</summary>
             <div class="section-heading">
                 <span class="step">JSON</span>
                 <div>
                     <h2>Respuesta del API</h2>
-                    <p>Los IDs de reserva y detalle aparecen aquí después de crearla.</p>
+                    <p>Información detallada recibida del servicio.</p>
                 </div>
             </div>
             <pre><code>@Model.ResponseJson</code></pre>
-        </section>
+        </details>
     }
 
-    <footer>RentaTica · Demostración del flujo de alquiler para R4</footer>
+    <footer>RentaTica · Gestión de alquileres <a href="http://localhost:3000/docs" target="_blank" rel="noreferrer">Documentación del API</a></footer>
 </main>
 <script>
     (() => {

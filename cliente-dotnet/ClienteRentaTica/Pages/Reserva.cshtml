@@ -4,9 +4,9 @@
 @{ Layout = null; }
 <!doctype html>
 <html lang="es">
-<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Reserva #@Model.Id · RentaTica</title><link rel="stylesheet" href="~/css/site.css" /></head>
-<body><main class="shell">
-<header class="hero"><div><p class="eyebrow">RentaTica</p><h1>Reserva #@Model.Id</h1></div><a asp-page="/Index" class="button ghost">Volver a reservas</a><a asp-page="/Reserva" asp-route-id="@Model.Id" class="button ghost">Actualizar ficha</a></header>
+<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Reserva #@Model.Id · RentaTica</title><link rel="stylesheet" href="~/css/site.css" asp-append-version="true" /></head>
+<body><main class="shell detail-shell">
+<header class="hero detail-hero"><div><p class="eyebrow">RentaTica</p><h1>Reserva #@Model.Id</h1></div><a asp-page="/Index" class="button ghost">Volver a reservas</a><a asp-page="/Reserva" asp-route-id="@Model.Id" class="button ghost">Actualizar ficha</a></header>
 @if (Model.Error is not null) { <div class="notice error" role="alert">@Model.Error</div> }
 @if (Model.Notice is not null) { <div class="notice success" role="status">@Model.Notice</div> }
 @if (Model.Loaded)
