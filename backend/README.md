@@ -48,3 +48,9 @@ También puedes probar las mismas rutas en Swagger `/docs`, primero usando `POST
 
 - `GET /api/equipos/disponibilidad?fecha_inicio=2026-12-01T08:00:00&fecha_fin=2026-12-01T12:00:00`: equipos libres para el rango, importe estimado y tarifa de garantía de categoría. Usa `usp_Equipo_ConsultarDisponibilidad`; el negocio se toma del JWT. Requiere Administrador u Operador. Las fechas siguen el formato local sin zona usado por el formulario de reserva. Consultar no bloquea equipos; crear la reserva vuelve a validar dentro de la transacción.
 - Prueba de solo lectura: `node tests/disponibilidad.cjs`; requiere una reserva anticipada futura existente y configuración SQL del API. No reinicia escenarios ni modifica datos.
+
+### Entrega de anticipadas
+
+`POST /api/reservas/{reserva_id}/entrega` usa `usp_Reserva_Entregar`. Solo Administrador/Operador; negocio y usuario provienen del JWT. Entrega todos los equipos asignados sin aceptar IDs de equipo, fechas ni negocio del cuerpo. Exige Confirmada, saldo cero y horario SQL `[fecha_inicio, fecha_fin)`. Devuelve la ficha, cuyo encabezado agrega `hora_servidor` y cuyos detalles agregan `estado_equipo`. El depósito no cuenta como pago del alquiler.
+
+Prueba independiente con limpieza de sus propios datos: `node tests/entrega.cjs`. No reinicia el escenario api-flujo.

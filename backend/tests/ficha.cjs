@@ -14,7 +14,9 @@ async function page(path, data) {
 function csrf(html) { const match = html.match(/name="__RequestVerificationToken"[^>]*value="([^"]+)"/); assert.ok(match, 'antiforgery token'); return match[1]; }
 async function api(path, token, body) {
   const r = await fetch('http://localhost:3000/api/' + path, {method:body ? 'POST':'GET',headers:{'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{})},body:body?JSON.stringify(body):undefined});
-  return { status:r.status, data: await r.json() };
+  const data = await r.json();
+  if (data.reserva) delete data.reserva.hora_servidor;
+  return { status:r.status, data };
 }
 (async () => {
   let other;

@@ -205,6 +205,23 @@ router.post('/reservas/:reserva_id/pagos', ...staff, async (req, res, next) => {
   }
 });
 
+router.post('/reservas/:reserva_id/entrega', ...staff, async (req, res, next) => {
+  const negocioId = readBusinessId(req, res);
+  if (!negocioId) return;
+  const reservaId = readPositiveId(req.params.reserva_id);
+  const usuarioId = readPositiveId(req.auth?.sub);
+  if (!reservaId) return res.status(400).json({ error: 'reserva_id debe ser un entero positivo.' });
+  if (!usuarioId) return res.status(403).json({ error: 'La sesion no identifica un empleado valido.' });
+  try {
+    const pool = await getPool();
+    await pool.request()
+      .input('reserva_id', sql.Int, reservaId)
+      .input('negocio_id', sql.Int, negocioId)
+      .input('usuario_id', sql.Int, usuarioId)
+      .execute('renta.usp_Reserva_Entregar');
+    return res.json({ mensaje: 'Equipos entregados.', ...await getReservation(pool, reservaId, negocioId) });
+  } catch (error) { return next(error); }
+});
 router.post('/devoluciones/:detalle_id', ...staff, async (req, res, next) => {
   const negocioId = readBusinessId(req, res);
   if (!negocioId) return;

@@ -19,6 +19,31 @@ public sealed class ReservaModel(IHttpClientFactory factory) : PageModel
     public bool Staff => HttpContext.Session.GetString("rentatica-user-role") is "Operador" or "Administrador";
     public bool CanPay => Loaded && Staff && Text(Header, "estado") != "Cancelada" && Money(Header, "saldo") > 0;
     public bool CanReturn(JsonElement item) => Staff && Text(Header, "estado") == "En curso" && Has(item, "fecha_hora_entrega") && !Has(item, "fecha_hora_devolucion");
+    public bool AwaitingDelivery => Loaded && Staff && Text(Header, "tipo_reserva") == "Anticipada" && Text(Header, "estado") is "Pendiente" or "Confirmada";
+    public string? DeliveryBlock
+    {
+        get
+        {
+            if (!AwaitingDelivery) return "La reserva no está pendiente de entrega.";
+            if (Text(Header, "estado") != "Confirmada" || Money(Header, "saldo") != 0) return "Completa el pago del alquiler para confirmar la reserva. El depósito de garantía es independiente.";
+            if (!Has(Header, "hora_servidor")) return "No se pudo verificar la hora de SQL Server. Actualiza la ficha.";
+            var now = Header.GetProperty("hora_servidor").GetDateTime();
+            if (now < Header.GetProperty("fecha_inicio").GetDateTime()) return "Aún no llega la hora de inicio. Actualiza la ficha al comenzar el alquiler.";
+            if (now >= Header.GetProperty("fecha_fin").GetDateTime()) return "El período de entrega terminó. No se puede entregar esta reserva.";
+            if (!Rows("detalles").Any() || Rows("detalles").Any(d => Has(d, "fecha_hora_entrega") || Has(d, "fecha_hora_devolucion") || Text(d, "estado_equipo") is not ("Disponible" or "Reservado"))) return "Revisa los equipos asignados: alguno no está en condiciones de salir o ya fue entregado.";
+            return null;
+        }
+    }
+    public async Task<IActionResult> OnPostEntregarAsync(int id)
+    {
+        Id = id;
+        if (!await Load()) return Page();
+        if (DeliveryBlock is string reason) { Error = reason; return Page(); }
+        if (await Send(HttpMethod.Post, $"api/reservas/{Id}/entrega", new { }) is null)
+        { await Load(); return Page(); }
+        return RedirectToPage(new { id = Id, resultado = "entrega" });
+    }
+
     public static bool Has(JsonElement item, string key) => item.TryGetProperty(key, out var v) && v.ValueKind != JsonValueKind.Null;
     public static string Text(JsonElement item, string key) => Has(item, key) ? item.GetProperty(key).ToString() : "—";
     public static decimal Money(JsonElement item, string key) => Has(item, key) ? item.GetProperty(key).GetDecimal() : 0;
@@ -31,7 +56,7 @@ public sealed class ReservaModel(IHttpClientFactory factory) : PageModel
         Id = id;
         if (!await Load()) return Page();
         Monto = Money(Header, "saldo");
-        Notice = resultado switch { "pago" => "Pago registrado.", "devolucion" => "Devolución registrada.", _ => null };
+        Notice = resultado switch { "entrega" => "Equipos entregados. La reserva está en curso.", "pago" => "Pago registrado.", "devolucion" => "Devolución registrada.", _ => null };
         return Page();
     }
 

@@ -77,3 +77,21 @@ Verificación: compilación sin errores, sintaxis del API, prueba de disponibili
 
 
 La consulta de disponibilidad mantiene el formulario abierto y lleva la vista al bloque **Selecciona el equipo**. No crea la reserva: el operador elige una unidad y pulsa **Crear reserva**. Al cambiar fechas se invalida la selección. La lista muestra las mismas horas del negocio que la ficha, sin convertirlas a la zona horaria del servidor web.
+
+## Entrega de reservas anticipadas
+
+1. Reinicia el API (`npm.cmd start` desde backend), abre la solución y pulsa F5.
+2. Abre una anticipada desde **Ver detalle**. Admite abonos; al pagar el saldo completo pasa de Pendiente a Confirmada.
+3. Antes del inicio, la ficha indica que aún no se puede entregar. Desde el inicio previsto y antes del fin, actualiza la ficha: aparece **Entregar equipos** si está Confirmada, sin deuda y con equipos aptos.
+4. Comprueba los códigos y pulsa **Entregar equipos**. Se entregan todos juntos; la reserva pasa a En curso y muestra la hora real. No se modifica el importe ni el depósito.
+5. Devuelve cada equipo desde la ficha. La reserva se completa cuando se devuelven todos, con las reglas existentes del depósito.
+
+SQL usa su propio reloj después de adquirir los bloqueos. Rechaza equipos averiados, en mantenimiento, fuera de servicio, alquilados, con mantenimiento abierto o entregados sin devolver en otro alquiler, aunque su período ya terminara. Revalida las asignaciones en la transacción. La interfaz usa la hora SQL recibida al consultar; actualiza la ficha cuando llegue el horario. SQL vuelve a validar al guardar.
+
+Instalación: ejecutar `database/03_procedures/Reserva/transactions/usp_Reserva_Entregar.sql` y `database/03_procedures/Reserva/procedures/usp_Reserva_ObtenerPorId.sql`. Ya se instalaron localmente. Inventario: 77 SP, 6 funciones y 2 triggers.
+
+Pruebas: `node backend/tests/entrega.cjs` crea un negocio temporal independiente y lo elimina al terminar. Cubre abonos, saldo separado de garantía, horario, vencimiento durante espera de bloqueo, estados, mantenimiento, otro alquiler sin devolución, asignación duplicada, negocio/rol incorrectos, entrega concurrente, auditoría, devolución y Walk-in.
+
+Para incluir el formulario Razor: inicia el cliente temporal con la variable `RentaTicaApi__BaseUrl=http://127.0.0.1:3001/` y URL `http://localhost:5182`; ejecuta el test con `TEST_API_PORT=3001` y `CLIENT_URL=http://localhost:5182`. La prueba inicia y detiene su propio API. Se verificó el formulario real por HTTP con sesión y antiforgery, además de compilar; no se hizo una nueva inspección visual en esta entrega.
+
+La reserva futura del usuario se conservó, sin adelantar fechas ni completar pagos. Modificación, cancelación y cargos por atraso quedan para entregas posteriores.

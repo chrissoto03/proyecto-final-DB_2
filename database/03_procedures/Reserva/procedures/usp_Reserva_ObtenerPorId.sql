@@ -25,7 +25,7 @@ BEGIN
             THROW 50001, 'La reserva no existe en este negocio.', 1;
 
         SELECT r.reserva_id, r.negocio_id, r.tipo_reserva, r.estado, r.fecha_reserva,
-               r.fecha_inicio, r.fecha_fin, r.monto_final,
+               r.fecha_inicio, r.fecha_fin, r.monto_final, GETDATE() AS hora_servidor,
                ISNULL((SELECT SUM(p.monto) FROM renta.Pago p
                        WHERE p.reserva_id = r.reserva_id AND p.estado = 'Completado'), 0) AS total_pagado,
                r.monto_final - ISNULL((SELECT SUM(p.monto) FROM renta.Pago p
@@ -38,7 +38,7 @@ BEGIN
         WHERE r.reserva_id = @reserva_id;
 
         SELECT d.detalle_id, d.equipo_id, e.codigo_interno, c.nombre AS categoria,
-               d.tarifa_aplicada, d.fecha_hora_entrega, d.fecha_hora_devolucion,
+               e.estado AS estado_equipo, d.tarifa_aplicada, d.fecha_hora_entrega, d.fecha_hora_devolucion,
                d.estado_equipo_devolucion
         FROM renta.DetalleReserva d
         INNER JOIN renta.Equipo e ON e.equipo_id = d.equipo_id

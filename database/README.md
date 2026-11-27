@@ -23,14 +23,14 @@ negocio vive en funciones y procedimientos almacenados.
 
 ## Inventario y cómo se cuenta
 
-El código fuente contiene **76 procedimientos almacenados, 6 funciones y 2
-triggers**. Los seis procedimientos que usan transacciones explícitas forman
-parte de los 76 procedimientos; no son objetos adicionales:
+El código fuente contiene **77 procedimientos almacenados, 6 funciones y 2
+triggers**. Los siete procedimientos que usan transacciones explícitas forman
+parte de los 77 procedimientos; no son objetos adicionales:
 
 - Transacciones: `usp_Mantenimiento_Crear`, `usp_Mantenimiento_Finalizar`,
-  `usp_Reserva_Eliminar`, `usp_Reserva_Crear`, `usp_Pago_Registrar` y
+  `usp_Reserva_Eliminar`, `usp_Reserva_Crear`, `usp_Reserva_Entregar`, `usp_Pago_Registrar` y
   `usp_Equipo_Devolver`.
-- `sys.procedures` cuenta procedimientos almacenados, incluidas esas seis
+- `sys.procedures` cuenta procedimientos almacenados, incluidas esas siete
   transacciones. No cuenta funciones ni triggers.
 - Las seis funciones y los dos triggers se consultan en catálogos de sistema
   distintos.
@@ -57,12 +57,12 @@ definición está en su propio archivo. La verificación recorre nombre por nomb
    CategoriaEquipo, Equipo, Mantenimiento, Reserva, DetalleReserva, Pago,
    Deposito, AuditoriaEquipo y Reportes. Dentro de cada carpeta, ejecutar los
    archivos por nombre.
-6. Instalar los seis procedimientos de las carpetas `transactions/`: primero
+6. Instalar los siete procedimientos de las carpetas `transactions/`: primero
    Mantenimiento, Reserva, Pago y Equipo.
 7. Instalar los triggers de Usuario y Equipo.
 8. Ejecutar las pruebas numeradas de `05_tests/`.
 9. Ejecutar `06_validation/01_verificar_inventario_objetos.sql`. Debe mostrar
-   76 PROCEDURE, 6 FUNCTION, 2 TRIGGER y ninguna diferencia.
+   77 PROCEDURE, 6 FUNCTION, 2 TRIGGER y ninguna diferencia.
 
 Los scripts de tablas son solo para una base nueva; no ejecutarlos sobre la
 base existente porque las tablas ya están creadas. Funciones, procedimientos
@@ -84,3 +84,5 @@ objetos faltantes o inesperados en `renta`.
 
 
 
+
+La etapa de producto agrega `usp_Reserva_Entregar` al inventario histórico de R4. Para actualizar una instalación existente, ejecuta `03_procedures/Reserva/transactions/usp_Reserva_Entregar.sql` y `03_procedures/Reserva/procedures/usp_Reserva_ObtenerPorId.sql`. No recrees tablas ni escenarios de prueba.

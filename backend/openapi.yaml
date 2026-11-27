@@ -181,6 +181,19 @@ paths:
         '400': { description: Estado o montos inválidos }
         '404': { description: Detalle no encontrado en el negocio }
         '403': { description: Equipo ya devuelto o depósito no liquidable }
+  /api/reservas/{reserva_id}/entrega:
+    post:
+      summary: Entrega todos los equipos de una reserva anticipada
+      description: Requiere Confirmada, saldo del alquiler cero y horario SQL entre inicio inclusivo y fin exclusivo. Valida condiciones y otras entregas pendientes. El depósito es independiente.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: reserva_id, required: true, schema: { type: integer, minimum: 1 } }
+      responses:
+        '200': { description: Entrega registrada con ficha actualizada }
+        '400': { description: Identificador inválido }
+        '401': { description: Sesión inválida }
+        '403': { description: Rol o condiciones de entrega no válidos }
+        '404': { description: Reserva no encontrada en el negocio }
 components:
   securitySchemes:
     bearerAuth:
