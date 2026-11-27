@@ -101,7 +101,24 @@
                     <span asp-validation-for="Reserva.FechaFin" class="validation"></span>
 
                     <button class="button ghost" type="submit" asp-page-handler="Disponibilidad" formnovalidate>Consultar disponibilidad</button>
-                    <p class="hint">Si cambias las fechas o el tipo, consulta de nuevo antes de elegir equipo. La disponibilidad se vuelve a validar al crear la reserva.</p>                    <label asp-for="Reserva.EquipoId">Equipo disponible</label>
+                    <section id="resultado-disponibilidad" class="availability-result" tabindex="-1" aria-labelledby="titulo-disponibilidad" data-consultada="@(Model.DisponibilidadConsultada ? "true" : "false")">
+                        <h3 id="titulo-disponibilidad">2. Selecciona el equipo</h3>
+                        @if (Model.DisponibilidadConsultada)
+                        {
+                            <p role="status" id="resumen-disponibilidad">
+                                @if (Model.EquiposDisponibles.Count == 0)
+                                {
+                                    <strong>No hay equipos disponibles. Cambia las fechas y vuelve a consultar.</strong>
+                                }
+                                else
+                                {
+                                    <strong>@Model.EquiposDisponibles.Count equipo(s) disponible(s). Selecciona uno abajo y pulsa Crear reserva.</strong>
+                                }
+                            </p>
+                            <p class="hint">Fin consultado: @Model.Reserva.FechaFin.ToString("dd/MM/yyyy HH:mm"). La consulta no crea ni aparta una reserva.</p>
+                        }
+                        <p id="aviso-fechas" class="hint">Si cambias las fechas o el tipo, vuelve a consultar. La disponibilidad se valida otra vez al crear.</p>
+                        <label asp-for="Reserva.EquipoId">Equipo disponible</label>
                     <select asp-for="Reserva.EquipoId">
                         <option value="0">Selecciona un equipo</option>
                         @foreach (var equipo in Model.EquiposDisponibles)
@@ -111,7 +128,8 @@
                     </select>
                     <span asp-validation-for="Reserva.EquipoId" class="validation"></span>
 
-                    <button class="button primary" type="submit">Crear reserva</button>
+                    <button id="crear-reserva" class="button primary" type="submit" disabled="@(Model.EquiposDisponibles.Count == 0)">Crear reserva</button>
+                    </section>
                 </form>
             </article>
 
@@ -180,8 +198,8 @@
                             </div>
                             <div class="reservation-info">
                                 <div><span>Tipo</span><strong>@reserva.TipoReserva</strong></div>
-                                <div><span>Inicio</span><strong>@reserva.FechaInicio.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</strong></div>
-                                <div><span>Fin</span><strong>@reserva.FechaFin.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</strong></div>
+                                <div><span>Inicio</span><strong>@reserva.FechaInicio.ToString("dd/MM/yyyy HH:mm")</strong></div>
+                                <div><span>Fin</span><strong>@reserva.FechaFin.ToString("dd/MM/yyyy HH:mm")</strong></div>
                                 <div><span>Equipos</span><strong>@reserva.TotalEquipos</strong></div>
                                 <div><span>Total</span><strong>@reserva.MontoFinal.ToString("N2")</strong></div>
                             </div>
@@ -223,9 +241,22 @@
         const invalidarEquipos = () => {
             const equipos = document.getElementById('Reserva_EquipoId');
             equipos.replaceChildren(new Option('Consulta la disponibilidad para estas fechas', '0'));
+            document.getElementById('crear-reserva').disabled = true;
+            const resumen = document.getElementById('resumen-disponibilidad');
+            if (resumen) resumen.textContent = 'Las fechas cambiaron. Consulta de nuevo para ver los equipos disponibles.';
         };
         [tipo, document.getElementById('Reserva_FechaInicio'), document.getElementById('Reserva_FechaFin')].forEach(input => input.addEventListener('change', invalidarEquipos));
         actualizar();
+        const resultado = document.getElementById('resultado-disponibilidad');
+        const equipo = document.getElementById('Reserva_EquipoId');
+        const crear = document.getElementById('crear-reserva');
+        const validarSeleccion = () => { crear.disabled = equipo.value === '0'; };
+        equipo.addEventListener('change', validarSeleccion);
+        validarSeleccion();
+        if (resultado.dataset.consultada === 'true') {
+            resultado.focus({ preventScroll: true });
+            resultado.scrollIntoView({ block: 'center' });
+        }
     })();
 </script>
 </body>

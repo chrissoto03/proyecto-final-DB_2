@@ -250,3 +250,7 @@ footer { padding: 25px 4px 0; color: #7a8981; font-size: 11px; text-align: cente
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
 }
+.availability-result { display: grid; gap: 12px; padding: 18px; border: 2px solid #c6d8cc; border-radius: 12px; background: #f4faf6; scroll-margin-top: 20px; }
+.availability-result h3, .availability-result p { margin: 0; }
+.availability-result:focus { outline: 3px solid #287750; outline-offset: 3px; }
+.button:disabled { opacity: .55; cursor: not-allowed; }

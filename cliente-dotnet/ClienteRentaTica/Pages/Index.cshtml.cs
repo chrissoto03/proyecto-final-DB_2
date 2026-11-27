@@ -58,6 +58,7 @@ public sealed class IndexModel(IHttpClientFactory httpClientFactory) : PageModel
     public string DisplayEmail => HttpContext.Session.GetString(EmailKey) ?? "";
     public string DisplayName => HttpContext.Session.GetString(NameKey) ?? DisplayEmail;
     public string DisplayRole => HttpContext.Session.GetString(RoleKey) ?? "";
+    public bool DisponibilidadConsultada { get; private set; }
     public string? StatusMessage { get; private set; }
     public string? ErrorMessage { get; private set; }
     public string? ResponseJson { get; private set; }
@@ -142,7 +143,7 @@ public sealed class IndexModel(IHttpClientFactory httpClientFactory) : PageModel
         ModelState.Remove("Reserva.EquipoId");
         Reserva.EquipoId = 0;
         await LoadReferenceDataAsync();
-        if (ErrorMessage is null) StatusMessage = $"{EquiposDisponibles.Count} equipos disponibles para el período indicado. Selecciona uno para crear la reserva.";
+        DisponibilidadConsultada = ErrorMessage is null;
         return Page();
     }
 

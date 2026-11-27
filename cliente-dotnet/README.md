@@ -74,3 +74,6 @@ La ficha distingue **Total del alquiler**, **Abonos al alquiler** y **Saldo del 
 Instalación SQL de esta entrega: ejecutar `database/02_functions/Equipo/fn_EquipoEstaDisponible.sql` y `database/02_functions/Equipo/fn_EquiposDisponibles.sql`. Ambas excluyen equipos en mantenimiento, igual que la creación de reservas. Ya se instalaron localmente. No se modificaron reservas ni pagos del usuario.
 
 Verificación: compilación sin errores, sintaxis del API, prueba de disponibilidad contra SQL real (`node backend/tests/disponibilidad.cjs`) y formularios Razor por HTTP con sesión y antiforgery. Se verificaron solapamiento, rango libre con estimación, fechas inválidas, rol no autorizado y negocio inexistente. No se hizo inspección visual ni se implementaron todavía entrega, modificación, cancelación o atrasos de anticipadas.
+
+
+La consulta de disponibilidad mantiene el formulario abierto y lleva la vista al bloque **Selecciona el equipo**. No crea la reserva: el operador elige una unidad y pulsa **Crear reserva**. Al cambiar fechas se invalida la selección. La lista muestra las mismas horas del negocio que la ficha, sin convertirlas a la zona horaria del servidor web.
