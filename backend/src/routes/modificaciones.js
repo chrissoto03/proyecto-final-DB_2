@@ -43,7 +43,13 @@ router.get('/reservas/:id/modificacion/equipos',async(req,res,next)=>{
     const pool=await getPool();
     await pool.request().input('reserva_id',sql.Int,Number(req.params.id)).input('negocio_id',sql.Int,Number(req.auth.negocio_id)).execute('renta.usp_Reserva_ObtenerPorId');
     const result=await pool.request().input('negocio_id',sql.Int,Number(req.auth.negocio_id)).execute('renta.usp_Equipo_Listar');
-    res.json({datos:result.recordset});
+    const maintenance=await pool.request().input('negocio_id',sql.Int,Number(req.auth.negocio_id)).execute('renta.usp_Equipo_ListarConMantenimientoAbierto');
+    const unavailable=new Set((maintenance.recordset||[]).map(e=>e.equipo_id));
+    res.json({datos:(result.recordset||[]).map(e=>({...e,
+      motivo_no_reservable: ['Averiado','Mantenimiento','Fuera de servicio'].includes(e.estado)
+        ? `No se puede reservar: ${e.estado.toLowerCase()}.`
+        : unavailable.has(e.equipo_id) ? 'No se puede reservar: tiene mantenimiento abierto.' : null
+    }))});
   }catch(e){next(e);}
 });
 router.post('/reservas/:id/modificacion/revisar',async(req,res,next)=>{

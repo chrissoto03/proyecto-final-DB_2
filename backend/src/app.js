@@ -39,7 +39,8 @@ app.use((error, _req, res, _next) => {
   const sqlStatus = new Map([[50001, 404], [50002, 409], [50003, 400], [50004, 403], [50005, 401]]);
   const status = sqlStatus.get(number) || ((error.status >= 400 && error.status < 500) ? error.status : 500);
   if (number && sqlStatus.has(number)) {
-    return res.status(status).json({ error: error.message, codigo_sql: number });
+    const message = String(error.message || '').replace(/^(?:\[[^\]\r\n]+\]\s*)+/, '').trim();
+    return res.status(status).json({ error: message || 'No se pudo completar la operación. Revisa los datos.', codigo_sql: number });
   }
   if (status === 500) console.error('Fallo de API/SQL:', error.code || error.name || 'error interno');
   return res.status(status).json({ error: status === 500 ? 'Error interno del servidor.' : error.message });

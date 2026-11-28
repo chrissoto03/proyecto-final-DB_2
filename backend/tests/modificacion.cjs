@@ -46,7 +46,7 @@ const app = require('../src/app');
     const review=p=>post(`reservas/${fixture.r}/modificacion/revisar`,p);
     const commit=quote=>post(`reservas/${fixture.r}/modificacion/confirmar`,{confirmacion:quote.data.confirmacion});
     async function okReview(p) {const before=await snapshot();const result=await review(p);assert.equal(result.status,200,JSON.stringify(result));assert.deepEqual(await snapshot(),before,'Preview is read-only');return result;}
-    async function denied(label,action){const before=await snapshot();const result=await action();assert.ok([400,403,404,409].includes(result.status),`${label}: ${JSON.stringify(result)}`);assert.deepEqual(await snapshot(),before,label);console.log('PASS '+label);return result;}
+    async function denied(label,action){const before=await snapshot();const result=await action();assert.ok([400,403,404,409].includes(result.status),`${label}: ${JSON.stringify(result)}`);assert.deepEqual(await snapshot(),before,label);assert.ok(!/ODBC Driver|\[Microsoft\]|\[SQL Server\]/.test(result.data.error||''),'Business errors must not expose provider prefixes');console.log('PASS '+label);return result;}
     const method=(await db.request().query('SELECT TOP(1) metodo_pago_id id FROM renta.MetodoPago ORDER BY metodo_pago_id')).recordset[0].id;
     await q('UPDATE renta.CategoriaEquipo SET tarifa_hora=99,tarifa_dia=200 WHERE categoria_id=@cat;');
     let quote=await okReview({fecha_inicio:initial.inicio,fecha_fin:initial.fin,equipo_ids:[fixture.e2,fixture.e1]});
@@ -71,6 +71,9 @@ const app = require('../src/app');
     await denied('customer role',()=>post(`reservas/${fixture.r}/modificacion/revisar`,make(2),fixture.n,'Cliente'));
     await denied('equipment outside business',()=>review(make(2,[2147483647])));
     await denied('duplicate equipment',()=>review(make(2,[fixture.e1,fixture.e1])));
+    await denied('empty equipment list',()=>review(make(2,[])));
+    await denied('invalid calendar date',()=>review({fecha_inicio:'2027-02-30T10:00:00',fecha_fin:'2027-03-01T10:00:00',equipo_ids:[fixture.e1]}));
+    await denied('end before start',()=>review({...make(2),fecha_fin:'2020-01-01T10:00:00'}));
     await denied('new start not future',()=>review({fecha_inicio:'2020-01-01T08:00:00',fecha_fin:'2020-01-01T09:00:00',equipo_ids:[fixture.e1]}));
     quote=await okReview(make(2,[fixture.e1]));
     await q(`INSERT renta.Reserva(negocio_id,cliente_id,tipo_reserva,fecha_inicio,fecha_fin,estado,monto_final)
@@ -132,6 +135,25 @@ const app = require('../src/app');
       const csrf=h=>h.match(/name="__RequestVerificationToken"[^>]*value="([^"]+)"/)[1];
       let ui=await page('/');ui=await page('/?handler=Login',{'Input.Email':`entrega-${tag}@prueba.test`,'Input.Password':'TemporalEntrega2026!',__RequestVerificationToken:csrf(ui.html)});
       ui=await page(`/reservas/${fixture.r}/modificar`);assert.equal(ui.status,200);
+      const testDates=await original();
+      for (const state of ['Averiado','Mantenimiento','Fuera de servicio']) {
+        await q(`UPDATE renta.Equipo SET estado='${state}' WHERE equipo_id=@e2;`);
+        ui=await page(`/reservas/${fixture.r}/modificar`);
+        const input=ui.html.match(new RegExp('<input[^>]*name="Equipos"[^>]*value="'+fixture.e2+'"[^>]*>'))?.[0];
+        assert.ok(input?.includes('disabled'),`disabled ${state}`);
+        const rejected=await page(`/reservas/${fixture.r}/modificar?handler=Revisar`,{Inicio:testDates.inicio,Fin:testDates.fin,Equipos:String(fixture.e2),__RequestVerificationToken:csrf(ui.html)});
+        assert.equal(rejected.status,200);assert.ok(rejected.html.includes('ENT-002: No se puede reservar'));
+        assert.ok(!rejected.html.includes('Confirmar modificación'));
+      }
+      await q("UPDATE renta.Equipo SET estado='Disponible' WHERE equipo_id=@e2; INSERT renta.Mantenimiento(equipo_id,tipo,fecha_inicio) VALUES(@e2,'Preventivo',GETDATE());");
+      ui=await page(`/reservas/${fixture.r}/modificar`);assert.ok(ui.html.includes('tiene mantenimiento abierto'));
+      await q('DELETE renta.Mantenimiento WHERE equipo_id=@e2;');
+      ui=await page(`/reservas/${fixture.r}/modificar`);
+      for (const bad of [{Inicio:testDates.fin,Fin:testDates.inicio,Equipos:String(fixture.e1)},{Inicio:testDates.inicio,Fin:testDates.fin},{Inicio:'2020-01-01T10:00',Fin:testDates.fin,Equipos:String(fixture.e1)}]) {
+        const rejected=await page(`/reservas/${fixture.r}/modificar?handler=Revisar`,{...bad,__RequestVerificationToken:csrf(ui.html)});
+        assert.equal(rejected.status,200);assert.ok(rejected.html.includes('role="alert"'));assert.ok(!rejected.html.includes('Confirmar modificación'));
+      }
+      console.log('PASS Razor disabled equipment, open maintenance, code-specific error, empty selection and invalid dates');
       const dates=await original();const fields={Inicio:dates.inicio,Fin:new Date(new Date(dates.fin+'Z').getTime()+3600000).toISOString().slice(0,-1),Equipos:String(fixture.e1)};
       ui=await page(`/reservas/${fixture.r}/modificar?handler=Revisar`,{...fields,__RequestVerificationToken:csrf(ui.html)});assert.ok(ui.html.includes('Total anterior'));assert.ok(ui.html.includes('Confirmar modificación'));
       const confirmation=ui.html.match(/name="Confirmacion"[^>]*value="([^"]+)"/)?.[1] || ui.html.match(/value="([^"]+)"[^>]*name="Confirmacion"/)?.[1];assert.ok(confirmation);

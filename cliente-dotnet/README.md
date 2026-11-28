@@ -112,3 +112,11 @@ SQL: instalar `database/03_procedures/Reserva/transactions/usp_Reserva_Modificar
 Verificación: `node backend/tests/modificacion.cjs` crea y elimina únicamente su propio negocio temporal. Cubre revisión sin escrituras, precio conservado sin cambios, autorreserva excluida, equipos ocupados, tarifas y abonos que cambian entre pasos, dos confirmaciones simultáneas, estados y horario, equipos ajenos, token alterado, total menor que abonos y rollback provocado después de escribir detalles. Se verificó el formulario Razor por HTTP, incluida la segunda confirmación por cambio de tarifa.
 
 Para incluir Razor en la prueba, inicia el cliente desde su carpeta con `RentaTicaApi__BaseUrl=http://127.0.0.1:3001/` y `--urls http://localhost:5182`; ejecuta el test con `TEST_API_PORT=3001` y `CLIENT_URL=http://localhost:5182`. El test inicia su API y lo cierra al terminar. Requiere permisos SQL para crear el escenario y el trigger de fallo controlado; este se crea dentro de una transacción que se revierte y se verifica que desaparece. No se hizo una nueva inspección visual en navegador en esta entrega.
+
+### Validaciones visibles al modificar
+
+No se pueden agregar equipos Averiado, Mantenimiento o Fuera de servicio, ni equipos con una orden de mantenimiento abierta. Si uno ya estaba seleccionado, se muestra el motivo y puede retirarse para elegir un reemplazo. La aplicación no elimina silenciosamente equipos asignados. Los equipos Reservado/Alquilado siguen siendo candidatos para períodos futuros; SQL comprueba el solapamiento excluyendo la propia reserva.
+
+Se valida inicio futuro según la hora SQL consultada, fin posterior al inicio, selección de 1 a 20 equipos sin repetir y pertenencia al catálogo. El servidor .NET y SQL repiten las comprobaciones aplicables; la disponibilidad final siempre se verifica al guardar. Los errores de negocio del API se muestran sin los prefijos técnicos del controlador ODBC.
+
+Verificado con compilación, sintaxis API y `backend/tests/modificacion.cjs`, incluyendo formularios Razor por HTTP, equipos deshabilitados, mantenimiento abierto, fechas inválidas, selección vacía y errores que identifican el código del equipo. No requiere nuevos scripts SQL ni cambios en datos existentes.

@@ -9,14 +9,20 @@
 @if (Model.Editable)
 {
     <section class="card"><h2>1. Fechas y equipos</h2><p>Puedes conservar equipos o seleccionar otros del negocio. Al revisar se comprueba su disponibilidad para el nuevo período, excluyendo esta misma reserva.</p>
-    <form method="post" asp-page-handler="Revisar" asp-route-id="@Model.Id" class="form-grid">
+    <form id="form-modificacion" data-hora-sql="@Model.HoraServidor.ToString("yyyy-MM-ddTHH:mm:ss.fff")" method="post" asp-page-handler="Revisar" asp-route-id="@Model.Id" class="form-grid">
     <label asp-for="Inicio">Nuevo inicio</label><input asp-for="Inicio" asp-format="{0:yyyy-MM-ddTHH:mm:ss.fff}" type="datetime-local" step="0.001" required />
     <label asp-for="Fin">Nuevo fin</label><input asp-for="Fin" asp-format="{0:yyyy-MM-ddTHH:mm:ss.fff}" type="datetime-local" step="0.001" required />
+    <p class="hint">Selecciona entre 1 y 20 equipos. Los averiados, fuera de servicio o con mantenimiento no se pueden agregar. Un equipo reservado o alquilado puede estar libre para otras fechas; se verificará al revisar.</p>
+    <p id="validacion-modificacion" class="validation" role="alert"></p>
     <fieldset class="equipment-choices"><legend>Equipos de la reserva</legend>
     @foreach (var e in Model.Catalogo)
     {
         var id = e.GetProperty("equipo_id").GetInt32();
-        <label class="equipment-choice"><input type="checkbox" name="Equipos" value="@id" checked="@Model.Equipos.Contains(id)" /><span><strong>@Text(e,"codigo_interno") · @Text(e,"categoria")</strong><small>Estado actual: @Text(e,"estado")</small></span></label>
+        var motivo = ClienteRentaTica.Pages.ModificarReservaModel.Motivo(e);
+        var seleccionado = Model.Equipos.Contains(id);
+        <label class="equipment-choice"><input type="checkbox" name="Equipos" value="@id" checked="@seleccionado" disabled="@(motivo is not null && !seleccionado)" data-motivo="@motivo" /><span><strong>@Text(e,"codigo_interno") · @Text(e,"categoria")</strong><small>Estado actual: @Text(e,"estado")</small>
+        @if (motivo is not null) { <small class="validation">@motivo @(seleccionado ? "Desmárcalo y elige un reemplazo para continuar." : "")</small> }
+        </span></label>
     }
     </fieldset>
     <button class="button primary" type="submit">Revisar cambios y precio</button></form></section>
@@ -46,6 +52,35 @@
 const review = document.getElementById('revision-modificacion');
 if (review) { review.focus({preventScroll:true}); review.scrollIntoView({block:'start'}); }
 // An edited proposal must be reviewed again before it can be confirmed.
-const editForm = document.querySelector('form');
-if (review && editForm) editForm.addEventListener('input', () => { review.hidden = true; });
-</script></body></html>
+const editForm = document.getElementById('form-modificacion');
+if (editForm) {
+    const inicio = document.getElementById('Inicio');
+    const fin = document.getElementById('Fin');
+    const mensaje = document.getElementById('validacion-modificacion');
+    const controles = [...editForm.querySelectorAll('input[name="Equipos"]')];
+    const validar = () => {
+        inicio.setCustomValidity(''); fin.setCustomValidity('');
+        if (inicio.value && inicio.value <= editForm.dataset.horaSql)
+            inicio.setCustomValidity('El nuevo inicio debe ser futuro según la hora del negocio.');
+        if (inicio.value && fin.value && fin.value <= inicio.value)
+            fin.setCustomValidity('El fin debe ser posterior al inicio.');
+        const seleccionados = controles.filter(c => c.checked);
+        const error = seleccionados.some(c => c.dataset.motivo)
+            ? 'Retira los equipos no aptos de la selección y elige un reemplazo.'
+            : seleccionados.length < 1 ? 'Selecciona al menos un equipo.'
+            : seleccionados.length > 20 ? 'Puedes seleccionar como máximo 20 equipos.' : '';
+        mensaje.textContent = error;
+        return !error;
+    };
+    editForm.addEventListener('input', () => {
+        if (review) review.hidden = true;
+        controles.forEach(c => { if (c.dataset.motivo && !c.checked) c.disabled = true; });
+        validar();
+    });
+    editForm.addEventListener('submit', event => {
+        if (!validar() || !editForm.reportValidity()) {
+            event.preventDefault();
+            mensaje.scrollIntoView({block:'center'});
+        }
+    });
+}</script></body></html>

@@ -15,6 +15,8 @@ public sealed class ModificarReservaModel(IHttpClientFactory factory) : PageMode
     public List<JsonElement> Catalogo { get; private set; } = [];
     public string? Error { get; private set; }
     public bool Editable { get; private set; }
+    public DateTime HoraServidor { get; private set; }
+    public static string? Motivo(JsonElement equipo) => equipo.TryGetProperty("motivo_no_reservable", out var reason) && reason.ValueKind == JsonValueKind.String ? reason.GetString() : null;
     private bool ApiOk;
 
     public async Task OnGetAsync(int id)
@@ -26,8 +28,22 @@ public sealed class ModificarReservaModel(IHttpClientFactory factory) : PageMode
     {
         Id = id;
         if (!await Load(false)) return Page();
-        if (!ModelState.IsValid || Inicio == default || Fin <= Inicio || Equipos.Length == 0)
-        { Error = "Indica un rango válido y selecciona al menos un equipo."; return Page(); }
+        if (!ModelState.IsValid || Inicio == default || Fin == default)
+        { Error = "Indica fechas y horas válidas."; return Page(); }
+        if (Inicio <= HoraServidor)
+        { Error = "El nuevo inicio debe ser futuro, según la hora del negocio."; return Page(); }
+        if (Fin <= Inicio)
+        { Error = "El fin debe ser posterior al inicio."; return Page(); }
+        if (Equipos.Length is < 1 or > 20 || Equipos.Distinct().Count() != Equipos.Length)
+        { Error = "Selecciona entre 1 y 20 equipos sin repetir."; return Page(); }
+        foreach (var idEquipo in Equipos)
+        {
+            var item = Catalogo.FirstOrDefault(e => e.GetProperty("equipo_id").GetInt32() == idEquipo);
+            if (item.ValueKind != JsonValueKind.Object)
+            { Error = "Un equipo seleccionado ya no pertenece al catálogo del negocio. Revisa la selección."; return Page(); }
+            if (Motivo(item) is string reason)
+            { Error = $"{ReservaModel.Text(item, "codigo_interno")}: {reason} Selecciona otro equipo."; return Page(); }
+        }
         var result = await Send(HttpMethod.Post, $"api/reservas/{Id}/modificacion/revisar", new
         {
             fecha_inicio = Inicio.ToString("yyyy-MM-ddTHH:mm:ss.fff", System.Globalization.CultureInfo.InvariantCulture),
@@ -62,6 +78,7 @@ public sealed class ModificarReservaModel(IHttpClientFactory factory) : PageMode
         var result = await Send(HttpMethod.Get, $"api/reservas/{Id}");
         if (!ApiOk || result is null) return false;
         var r = result.Value.GetProperty("reserva");
+        HoraServidor = r.GetProperty("hora_servidor").GetDateTime();
         var details = result.Value.GetProperty("detalles").EnumerateArray().ToArray();
         Editable = r.GetProperty("tipo_reserva").GetString() == "Anticipada"
             && r.GetProperty("estado").GetString() is "Pendiente" or "Confirmada"
