@@ -120,3 +120,15 @@ No se pueden agregar equipos Averiado, Mantenimiento o Fuera de servicio, ni equ
 Se valida inicio futuro según la hora SQL consultada, fin posterior al inicio, selección de 1 a 20 equipos sin repetir y pertenencia al catálogo. El servidor .NET y SQL repiten las comprobaciones aplicables; la disponibilidad final siempre se verifica al guardar. Los errores de negocio del API se muestran sin los prefijos técnicos del controlador ODBC.
 
 Verificado con compilación, sintaxis API y `backend/tests/modificacion.cjs`, incluyendo formularios Razor por HTTP, equipos deshabilitados, mantenimiento abierto, fechas inválidas, selección vacía y errores que identifican el código del equipo. No requiere nuevos scripts SQL ni cambios en datos existentes.
+
+## Horas del negocio e inventario legible
+
+Creación, disponibilidad y modificación ahora conservan las horas locales del negocio al enviarlas a SQL Server. El inicio Walk-in sigue asignándose con GETDATE() en SQL; SQL también valida que su fin sea posterior al inicio real. Se corrigió el desplazamiento de seis horas en las solicitudes nuevas, sin cambiar fechas ni importes ya almacenados. Las reservas creadas antes de esta corrección deben compararse con lo acordado antes de corregirlas: no se aplica una migración automática.
+
+En **Inventario y reportes**, elige un estado y pulsa **Consultar equipos**: se muestra una tabla con código, categoría, descripción y estado. **Ver reporte por categoría** muestra cantidades totales, disponibles, reservadas, alquiladas y fuera de operación. No hace falta abrir JSON. Si no hay filas, se indica claramente; la tabla permite desplazamiento horizontal en pantallas pequeñas.
+
+Una reserva Completada indica que terminó el alquiler; no implica que el equipo esté disponible. Un equipo devuelto Averiado permanece averiado y queda excluido de la disponibilidad.
+
+Verificado con `backend/tests/horas-inventario.cjs`: fechas iguales en entrada/API/SQL, importe de dos horas, solapamiento y períodos contiguos, modificación sin cambio de precio, Walk-in, rechazo de fin pasado y exclusión de averiados. Se ejecutó con TZ=America/Costa_Rica y TZ=UTC. También se probaron las tablas Razor por HTTP con un negocio temporal independiente; no se modificaron las reservas ni equipos del usuario. No se hizo una inspección visual adicional en navegador.
+
+Para probar: reinicia el API, abre la solución y pulsa F5. Consulta Averiado y el reporte por categoría. Crea una anticipada futura y comprueba que la ficha conserve las horas ingresadas. No requiere instalar scripts SQL.

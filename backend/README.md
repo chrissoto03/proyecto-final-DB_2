@@ -60,3 +60,9 @@ Prueba independiente con limpieza de sus propios datos: `node tests/entrega.cjs`
 Rutas bajo `/api/reservas/{id}/modificacion`: `GET equipos`, `POST revisar` y `POST confirmar`. Requieren Administrador/Operador y negocio del JWT. `revisar` recibe fechas locales sin zona y equipo_ids; devuelve comparación de importes y confirmación firmada. `confirmar` recibe solo `confirmacion`; SQL recalcula y compara la versión antes de guardar. Un 409 puede incluir un nuevo resumen/token que debe mostrarse y confirmarse de nuevo. No reintentar automáticamente. Precio acordado sin cambios, pagos preservados y garantía separada.
 
 Prueba aislada: `node tests/modificacion.cjs`. No reinicia api-flujo ni modifica reservas del usuario. El transporte de fechas de estas rutas conserva la hora local almacenada en SQL, sin aplicar la zona horaria del proceso Node.
+
+### Contrato de fechas locales
+
+Las rutas de creación, consulta de disponibilidad y modificación usan `src/lib/business-date.js`. Reciben `YYYY-MM-DDTHH:mm[:ss[.SSS]]` como hora local del negocio y preservan esos campos en SQL datetime, independientemente de la zona del proceso Node. Por compatibilidad admiten Z como representación del mismo valor SQL; no deben enviarse offsets como -06:00. Validan fechas reales del calendario y el mínimo de SQL datetime (1753). No convertir una hora local a un instante UTC antes de enviarla.
+
+Walk-in delega inicio y validación del fin a SQL Server, sin comparar una hora local con Date.now(). La corrección solo afecta solicitudes nuevas; no desplaza registros existentes. Prueba aislada: `node tests/horas-inventario.cjs`. Con CLIENT_URL y TEST_API_PORT incluye las tablas Razor, igual que la prueba de modificación.

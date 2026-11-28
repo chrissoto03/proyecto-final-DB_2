@@ -61,6 +61,9 @@ public sealed class IndexModel(IHttpClientFactory httpClientFactory) : PageModel
     public bool DisponibilidadConsultada { get; private set; }
     public string? StatusMessage { get; private set; }
     public string? ErrorMessage { get; private set; }
+    public List<JsonElement>? ConsultaFilas { get; private set; }
+    public bool ConsultaEsReporte { get; private set; }
+    public string ConsultaTitulo => ConsultaEsReporte ? "Inventario por categoría" : $"Equipos: {Estado}";
     public string? ResponseJson { get; private set; }
 
     public async Task OnGetAsync()
@@ -192,7 +195,9 @@ public sealed class IndexModel(IHttpClientFactory httpClientFactory) : PageModel
         var body = await SendProtectedAsync(HttpMethod.Get, path);
         if (body is not null)
         {
-            ResponseJson = FormatJson(body);
+            using var document = JsonDocument.Parse(body);
+            ConsultaFilas = document.RootElement.GetProperty("datos").EnumerateArray().Select(row => row.Clone()).ToList();
+            ConsultaEsReporte = path.StartsWith("api/reportes/", StringComparison.Ordinal);
             StatusMessage = successMessage;
         }
         await LoadReferenceDataAsync();

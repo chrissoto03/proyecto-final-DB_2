@@ -1,5 +1,6 @@
 'use strict';
 const { Router } = require('express');
+const { readBusinessDate } = require('../lib/business-date');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 const { getPool, sql } = require('../db');
@@ -15,20 +16,14 @@ function scope(req,res) {
 }
 function proposal(body) {
   const ids=body?.equipo_ids;
-  // SQL datetime is a business wall-clock value. Encode as UTC for the driver without shifting its hour.
-  const date=value=>{
-    if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,3})?$/.test(value))return false;
-    const parsed=new Date(value+'Z');
-    return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0,19)===value.slice(0,19);
-  };
-  if (!date(body?.fecha_inicio)||!date(body?.fecha_fin)||new Date(body.fecha_fin + 'Z')<=new Date(body.fecha_inicio + 'Z')||!Array.isArray(ids)||ids.length<1||ids.length>20||ids.some(x=>!positive(x))||new Set(ids.map(Number)).size!==ids.length) return null;
+  if (!readBusinessDate(body?.fecha_inicio)||!readBusinessDate(body?.fecha_fin)||readBusinessDate(body.fecha_fin)<=readBusinessDate(body.fecha_inicio)||!Array.isArray(ids)||ids.length<1||ids.length>20||ids.some(x=>!positive(x))||new Set(ids.map(Number)).size!==ids.length) return null;
   return {fecha_inicio:body.fecha_inicio,fecha_fin:body.fecha_fin,equipo_ids:ids.map(Number).sort((a,b)=>a-b)};
 }
 async function calculate(req,p,confirm=false,version=null) {
   const pool=await getPool();
   const result=await pool.request().input('reserva_id',sql.Int,Number(req.params.id))
     .input('negocio_id',sql.Int,Number(req.auth.negocio_id)).input('usuario_id',sql.Int,Number(req.auth.sub))
-    .input('fecha_inicio',sql.DateTime,new Date(p.fecha_inicio + 'Z')).input('fecha_fin',sql.DateTime,new Date(p.fecha_fin + 'Z'))
+    .input('fecha_inicio',sql.DateTime,readBusinessDate(p.fecha_inicio)).input('fecha_fin',sql.DateTime,readBusinessDate(p.fecha_fin))
     .input('equipos_json',sql.NVarChar(sql.MAX),JSON.stringify(p.equipo_ids))
     .input('confirmar',sql.Bit,confirm).input('version_esperada',sql.VarChar(64),version)
     .execute('renta.usp_Reserva_Modificar');

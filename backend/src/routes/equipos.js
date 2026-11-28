@@ -1,6 +1,7 @@
 'use strict';
 
 const { Router } = require('express');
+const { readBusinessDate } = require('../lib/business-date');
 const { getPool, sql } = require('../db');
 const { authenticate, requireRoles } = require('../middleware/auth');
 
@@ -12,8 +13,7 @@ const allowedStates = new Set([
 router.get('/disponibilidad', authenticate, requireRoles('Administrador', 'Operador'), async (req, res, next) => {
   const negocioId = req.auth.negocio_id;
   if (!Number.isInteger(negocioId) || negocioId <= 0) return res.status(403).json({ error: 'El usuario no pertenece a un negocio.' });
-  const parseDate = value => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d{1,3})?)?$/.test(value) ? new Date(value) : null;
-  const inicio = parseDate(req.query.fecha_inicio), fin = parseDate(req.query.fecha_fin);
+  const inicio = readBusinessDate(req.query.fecha_inicio), fin = readBusinessDate(req.query.fecha_fin);
   if (!inicio || !fin || !Number.isFinite(inicio.getTime()) || !Number.isFinite(fin.getTime()) || fin <= inicio) {
     return res.status(400).json({ error: 'Indica inicio y fin válidos; el fin debe ser posterior al inicio.' });
   }

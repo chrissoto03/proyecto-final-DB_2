@@ -210,24 +210,44 @@
         </section>
     }
 
-    @if (!string.IsNullOrWhiteSpace(Model.ResponseJson))
+    @if (Model.ConsultaFilas is not null)
     {
-        <details class="card response"><summary>Ver datos de la consulta</summary>
-            <div class="section-heading">
-                <span class="step">JSON</span>
-                <div>
-                    <h2>Respuesta del API</h2>
-                    <p>Información detallada recibida del servicio.</p>
-                </div>
-            </div>
-            <pre><code>@Model.ResponseJson</code></pre>
-        </details>
+        <section class="card response" id="resultado-inventario" tabindex="-1">
+        <h2>@Model.ConsultaTitulo</h2>
+        <p>@Model.ConsultaFilas.Count resultado(s). @(Model.ConsultaEsReporte ? "Fuera de operación incluye averiados, mantenimiento y fuera de servicio." : "Estado actual del equipo. La disponibilidad por fechas se consulta al crear una reserva.")</p>
+        @if (Model.ConsultaFilas.Count == 0)
+        { <p role="status">No hay resultados para esta consulta.</p> }
+        else
+        {
+            <div class="table-scroll"><table class="inventory-table"><caption>@Model.ConsultaTitulo</caption>
+            <thead><tr>
+            @if (Model.ConsultaEsReporte)
+            { <th scope="col">Categoría</th><th scope="col">Total</th><th scope="col">Disponibles</th><th scope="col">Reservados</th><th scope="col">Alquilados</th><th scope="col">Fuera de operación</th> }
+            else
+            { <th scope="col">Código</th><th scope="col">Categoría</th><th scope="col">Descripción</th><th scope="col">Estado</th> }
+            </tr></thead><tbody>
+            @foreach (var row in Model.ConsultaFilas)
+            {
+                <tr>
+                @if (Model.ConsultaEsReporte)
+                { <th scope="row">@ClienteRentaTica.Pages.ReservaModel.Text(row,"nombre")</th>
+                    @foreach (var key in new[] { "total", "disponibles", "reservados", "alquilados", "fuera_operacion" })
+                    { <td class="numeric">@ClienteRentaTica.Pages.ReservaModel.Text(row,key)</td> }
+                }
+                else
+                { <th scope="row">@ClienteRentaTica.Pages.ReservaModel.Text(row,"codigo_interno")</th><td>@ClienteRentaTica.Pages.ReservaModel.Text(row,"categoria")</td><td>@ClienteRentaTica.Pages.ReservaModel.Text(row,"descripcion")</td><td>@ClienteRentaTica.Pages.ReservaModel.Text(row,"estado")</td> }
+                </tr>
+            }
+            </tbody></table></div>
+        }
+        </section>
     }
-
     <footer>RentaTica · Gestión de alquileres <a href="http://localhost:3000/docs" target="_blank" rel="noreferrer">Documentación del API</a></footer>
 </main>
 <script>
     (() => {
+        const resultadoInventario = document.getElementById('resultado-inventario');
+        if (resultadoInventario) { resultadoInventario.focus({preventScroll:true}); resultadoInventario.scrollIntoView({block:'start'}); }
         const tipo = document.getElementById('Reserva_TipoReserva');
         const anticipada = document.getElementById('inicio-anticipada');
         const walkin = document.getElementById('inicio-walkin');

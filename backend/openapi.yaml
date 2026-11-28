@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: RentaTica API
   version: 1.1.0
-  description: API REST que autentica con SQL Server y delega la lógica de negocio a procedimientos almacenados.
+  description: API REST que autentica con SQL Server y delega la lógica a procedimientos almacenados. Fechas de reserva y disponibilidad son horas locales del negocio sin conversión de zona; formato YYYY-MM-DDTHH:mm:ss.SSS. Se admite Z por compatibilidad como representación del mismo valor SQL, no offsets.
 servers:
   - url: http://localhost:3000
 paths:

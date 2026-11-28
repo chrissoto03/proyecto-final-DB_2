@@ -1,6 +1,7 @@
 'use strict';
 
 const { Router } = require('express');
+const { readBusinessDate } = require('../lib/business-date');
 const { getPool, sql } = require('../db');
 const { authenticate, requireRoles } = require('../middleware/auth');
 
@@ -23,11 +24,7 @@ function readBusinessId(req, res) {
   return id;
 }
 
-function readDate(value) {
-  if (typeof value !== 'string' || !value.trim()) return null;
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
-}
+
 
 function readAmount(value, allowZero = false) {
   const amount = Number(value);
@@ -137,8 +134,8 @@ router.post('/reservas', authenticate, requireRoles('Operador'), async (req, res
   const clienteId = readPositiveId(req.body?.cliente_id);
   const equipoIds = req.body?.equipo_ids;
   const tipoReserva = req.body?.tipo_reserva;
-  const fechaInicioSolicitada = readDate(req.body?.fecha_inicio);
-  const fechaFin = readDate(req.body?.fecha_fin);
+  const fechaInicioSolicitada = readBusinessDate(req.body?.fecha_inicio);
+  const fechaFin = readBusinessDate(req.body?.fecha_fin);
   const operadorId = readPositiveId(req.auth?.sub);
   if (!clienteId) return res.status(400).json({ error: 'cliente_id debe ser un entero positivo.' });
   if (!Array.isArray(equipoIds) || equipoIds.length < 1 || equipoIds.length > 20 ||
@@ -154,7 +151,7 @@ router.post('/reservas', authenticate, requireRoles('Operador'), async (req, res
   const fechaInicio = tipoReserva === 'Walk-in'
     ? new Date(Date.now() - 60_000)
     : fechaInicioSolicitada;
-  if (fechaFin <= fechaInicio) {
+  if (tipoReserva === 'Anticipada' && fechaFin <= fechaInicio) {
     return res.status(400).json({ error: 'La fecha final debe ser posterior al inicio de la reserva.' });
   }
   if (tipoReserva === 'Walk-in' && !operadorId) {

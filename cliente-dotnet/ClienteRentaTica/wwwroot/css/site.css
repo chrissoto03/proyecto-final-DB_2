@@ -362,3 +362,13 @@ footer a { color: var(--muted); text-underline-offset: 3px; }
 .equipment-choice small { font-weight: 400; color: var(--muted); }
 #revision-modificacion { scroll-margin-top: 24px; }
 #revision-modificacion[hidden] { display: none; }
+
+.table-scroll { overflow-x: auto; margin-top: 20px; }
+.inventory-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+.inventory-table caption { text-align: left; padding-bottom: 12px; color: var(--muted); }
+.inventory-table th, .inventory-table td { padding: 14px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.inventory-table thead th { background: #f4f7fa; font-weight: 600; white-space: nowrap; }
+.inventory-table tbody th { font-weight: 600; }
+.inventory-table tbody tr:hover { background: #f7faf8; }
+.inventory-table .numeric { text-align: right; font-variant-numeric: tabular-nums; }
+#resultado-inventario { scroll-margin-top: 24px; }
