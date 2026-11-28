@@ -247,6 +247,60 @@ paths:
         '409': { description: Requiere revisar y confirmar otra vez }
         '403': { description: Ya no se cumplen las reglas de modificación }
         '404': { description: Reserva no encontrada en el negocio }
+  /api/equipos/{id}/ficha:
+    get:
+      summary: Ficha del equipo con historial de mantenimiento y reservas asociadas
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, minimum: 1 } }
+      responses:
+        '200': { description: Objeto con equipo, mantenimientos y reservas del negocio autenticado }
+        '403': { description: Requiere Operador o Administrador }
+        '404': { description: Equipo ajeno o inexistente }
+  /api/equipos/{id}/mantenimientos:
+    post:
+      summary: Inicia mantenimiento de un equipo Disponible o Averiado
+      description: Usa el empleado y negocio autenticados y la fecha SQL. Rechaza mantenimiento abierto o alquiler pendiente de devolución.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, minimum: 1 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tipo, descripcion, costo]
+              properties:
+                tipo: { type: string, enum: [Correctivo, Preventivo] }
+                descripcion: { type: string, minLength: 1, maxLength: 300 }
+                costo: { type: number, minimum: 0, maximum: 99999999.99, multipleOf: 0.01 }
+      responses:
+        '201': { description: Mantenimiento registrado y equipo en Mantenimiento }
+        '400': { description: Campos inválidos }
+        '403': { description: Rol o condiciones no válidos }
+        '404': { description: Equipo ajeno o inexistente }
+  /api/mantenimientos/{id}/finalizar:
+    post:
+      summary: Cierra mantenimiento y registra el resultado explícito
+      description: Disponible se convierte en Reservado si conserva reservas activas. No modifica pagos ni garantía. Requiere empleado activo del negocio.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, minimum: 1 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [costo, estado_equipo]
+              properties:
+                costo: { type: number, minimum: 0, maximum: 99999999.99, multipleOf: 0.01 }
+                estado_equipo: { type: string, enum: [Disponible, Averiado, Fuera de servicio] }
+      responses:
+        '200': { description: Cierre y cambio de estado guardados en una transacción }
+        '400': { description: Campos inválidos }
+        '403': { description: Mantenimiento cerrado, ajeno o condiciones no válidas }
 components:
   securitySchemes:
     bearerAuth:

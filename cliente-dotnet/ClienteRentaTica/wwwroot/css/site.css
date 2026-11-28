@@ -372,3 +372,9 @@ footer a { color: var(--muted); text-underline-offset: 3px; }
 .inventory-table tbody tr:hover { background: #f7faf8; }
 .inventory-table .numeric { text-align: right; font-variant-numeric: tabular-nums; }
 #resultado-inventario { scroll-margin-top: 24px; }
+
+.date-time-picker { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(110px, 1fr); gap: 12px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #f8fafc; }
+.date-time-picker label { color: var(--muted); font-size: 12px; }
+.date-time-summary { grid-column: 1 / -1; margin: 0; font-size: 13px; color: var(--green-dark); }
+textarea { width: 100%; padding: 14px; border: 1px solid #cdd7e2; border-radius: 9px; font: inherit; resize: vertical; }
+@media(max-width:420px) { .date-time-picker { grid-template-columns: 1fr; } }

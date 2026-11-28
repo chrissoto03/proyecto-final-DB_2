@@ -25,6 +25,12 @@ BEGIN
         FROM renta.Equipo e
         INNER JOIN renta.CategoriaEquipo c ON c.categoria_id = e.categoria_id
         WHERE e.equipo_id = @equipo_id;
+        SELECT r.reserva_id,r.estado,r.fecha_inicio,r.fecha_fin,u.nombre_completo AS cliente
+        FROM renta.DetalleReserva d JOIN renta.Reserva r ON r.reserva_id=d.reserva_id
+        JOIN renta.Usuario u ON u.usuario_id=r.cliente_id
+        WHERE d.equipo_id=@equipo_id AND r.negocio_id=@negocio_id
+          AND r.estado IN ('Pendiente','Confirmada','En curso') AND d.fecha_hora_devolucion IS NULL
+        ORDER BY r.fecha_inicio;
     END TRY
     BEGIN CATCH
         THROW;

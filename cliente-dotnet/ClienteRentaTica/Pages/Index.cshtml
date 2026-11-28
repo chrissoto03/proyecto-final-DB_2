@@ -136,7 +136,7 @@
             <article class="card workflow-card">
                 <span class="step">CONSULTAS</span>
                 <h2>Inventario y reportes</h2>
-                <p>Consulta la disponibilidad y el resumen del inventario de tu negocio.</p>
+                <p>Consulta el inventario y abre la ficha de un equipo por su código para gestionar reparaciones.</p>
                 <form method="post" asp-page-handler="Equipos" class="form-grid">
                     <label asp-for="Estado">Estado de equipo</label>
                     <select asp-for="Estado">
@@ -235,7 +235,7 @@
                     { <td class="numeric">@ClienteRentaTica.Pages.ReservaModel.Text(row,key)</td> }
                 }
                 else
-                { <th scope="row">@ClienteRentaTica.Pages.ReservaModel.Text(row,"codigo_interno")</th><td>@ClienteRentaTica.Pages.ReservaModel.Text(row,"categoria")</td><td>@ClienteRentaTica.Pages.ReservaModel.Text(row,"descripcion")</td><td>@ClienteRentaTica.Pages.ReservaModel.Text(row,"estado")</td> }
+                { <th scope="row"><a asp-page="/Equipo" asp-route-id="@ClienteRentaTica.Pages.ReservaModel.Text(row,"equipo_id")">@ClienteRentaTica.Pages.ReservaModel.Text(row,"codigo_interno")</a></th><td>@ClienteRentaTica.Pages.ReservaModel.Text(row,"categoria")</td><td>@ClienteRentaTica.Pages.ReservaModel.Text(row,"descripcion")</td><td>@ClienteRentaTica.Pages.ReservaModel.Text(row,"estado")</td> }
                 </tr>
             }
             </tbody></table></div>
@@ -279,5 +279,5 @@
         }
     })();
 </script>
-</body>
+<script src="~/js/date-time-picker.js" asp-append-version="true"></script></body>
 </html>

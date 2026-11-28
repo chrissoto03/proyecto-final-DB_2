@@ -66,3 +66,17 @@ Prueba aislada: `node tests/modificacion.cjs`. No reinicia api-flujo ni modifica
 Las rutas de creación, consulta de disponibilidad y modificación usan `src/lib/business-date.js`. Reciben `YYYY-MM-DDTHH:mm[:ss[.SSS]]` como hora local del negocio y preservan esos campos en SQL datetime, independientemente de la zona del proceso Node. Por compatibilidad admiten Z como representación del mismo valor SQL; no deben enviarse offsets como -06:00. Validan fechas reales del calendario y el mínimo de SQL datetime (1753). No convertir una hora local a un instante UTC antes de enviarla.
 
 Walk-in delega inicio y validación del fin a SQL Server, sin comparar una hora local con Date.now(). La corrección solo afecta solicitudes nuevas; no desplaza registros existentes. Prueba aislada: `node tests/horas-inventario.cjs`. Con CLIENT_URL y TEST_API_PORT incluye las tablas Razor, igual que la prueba de modificación.
+
+## Fechas y mantenimiento de equipos
+
+Los formularios de creación y modificación ofrecen fecha y hora separadas, con un resumen legible del día y hora del negocio. Conservan la precisión original mientras no se editen y mantienen el control nativo como alternativa sin JavaScript. La agenda mensual de reservas queda para una entrega posterior.
+
+Desde **Inventario y reportes**, consulta **Averiado** y abre el código del equipo. Su ficha muestra reservas asociadas e historial. Registra descripción, tipo y costo para iniciar mantenimiento; al finalizar elige explícitamente reparado, sigue averiado o fuera de servicio. Reparado queda Disponible, o Reservado si conserva reservas activas. Reparar no cancela reservas ni cobra al cliente: abonos y garantía permanecen separados.
+
+Se bloquean órdenes abiertas duplicadas, cierre repetido, costos inválidos, equipos pendientes de devolución y operaciones de otro negocio o rol. SQL guarda cada transición en una transacción, con usuario autenticado para auditoría. No se reparó automáticamente FLUJO-002.
+
+Instalar las versiones de usp_Mantenimiento_Crear.sql, usp_Mantenimiento_Finalizar.sql y usp_Equipo_ObtenerPorId.sql de database/03_procedures (ya instaladas localmente). Finalizar ahora exige usuario_id de un empleado activo del negocio. Se conservan 78 SP, 6 funciones y 2 triggers. Reinicia el API y el cliente para probar.
+
+Prueba aislada: node backend/tests/mantenimiento.cjs. Con CLIENT_URL y TEST_API_PORT también recorre los formularios Razor con antiforgery. Crea y elimina únicamente su negocio temporal.
+
+Verificación de esta entrega: compilación .NET sin errores, sintaxis API, YAML OpenAPI y pruebas SQL/API/Razor de mantenimiento correctas (incluido Fuera de servicio). La inspección en el navegador integrado mostró el formulario nativo, pero no ejecutó la mejora JavaScript; la apariencia y la interacción del selector mejorado quedan pendientes de comprobar en el navegador habitual. El archivo JavaScript respondió HTTP 200 y pasó la comprobación de sintaxis.

@@ -32,13 +32,15 @@ AS
    Autor:       <integrante>        Fecha: 2026-10-19
 ---------------------------------------------------------------------------- */
 BEGIN
-    SET NOCOUNT ON;
+    SET NOCOUNT ON; SET XACT_ABORT ON;
     BEGIN TRY
         IF @tipo IS NULL OR @tipo NOT IN ('Preventivo', 'Correctivo')
             THROW 50003, 'El tipo debe ser Preventivo o Correctivo.', 1;
         IF @costo IS NULL OR @costo < 0
             THROW 50003, 'El costo no puede ser negativo.', 1;
-        IF NOT EXISTS (SELECT 1 FROM renta.Usuario WHERE usuario_id = @operador_id AND negocio_id = @negocio_id)
+        IF NOT EXISTS (SELECT 1 FROM renta.Usuario u JOIN renta.Rol r ON r.rol_id=u.rol_id
+            JOIN renta.Negocio n ON n.negocio_id=u.negocio_id
+            WHERE u.usuario_id=@operador_id AND u.negocio_id=@negocio_id AND r.nombre IN ('Administrador','Operador') AND n.estado='Activo')
             THROW 50001, 'El operador no pertenece a este negocio.', 1;
 
         SET @fecha_inicio = ISNULL(@fecha_inicio, CAST(GETDATE() AS DATE));
@@ -54,6 +56,10 @@ BEGIN
 
         IF @estado_actual IS NULL
             THROW 50001, 'El equipo no existe en este negocio.', 1;
+        IF EXISTS(SELECT 1 FROM renta.Mantenimiento WITH(UPDLOCK,HOLDLOCK) WHERE equipo_id=@equipo_id AND fecha_fin IS NULL)
+            THROW 50004, 'El equipo ya tiene un mantenimiento abierto.', 1;
+        IF EXISTS(SELECT 1 FROM renta.DetalleReserva WITH(HOLDLOCK) WHERE equipo_id=@equipo_id AND fecha_hora_entrega IS NOT NULL AND fecha_hora_devolucion IS NULL)
+            THROW 50004, 'El equipo sigue pendiente de devolucion en un alquiler.', 1;
         IF @estado_actual NOT IN ('Disponible', 'Averiado')
             THROW 50004, 'Solo se puede enviar a mantenimiento un equipo Disponible o Averiado.', 1;
 

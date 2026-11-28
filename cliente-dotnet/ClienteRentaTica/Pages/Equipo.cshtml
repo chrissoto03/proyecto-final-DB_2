@@ -1,0 +1,32 @@
+@page "/equipos/{id:int}"
+@model ClienteRentaTica.Pages.EquipoModel
+@using static ClienteRentaTica.Pages.ReservaModel
+@{ Layout=null; }
+<!doctype html><html lang="es"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Equipo · RentaTica</title><link rel="stylesheet" href="~/css/site.css" asp-append-version="true" /></head><body><main class="shell detail-shell">
+<header class="hero detail-hero"><div><p class="eyebrow">Inventario · RentaTica</p><h1>Ficha de equipo</h1></div><a asp-page="/Index" class="button ghost">Volver al inventario</a><a asp-page="/Equipo" asp-route-id="@Model.Id" class="button ghost">Actualizar ficha</a></header>
+@if(Model.Error is not null){<div class="notice error" role="alert">@Model.Error</div>}
+@if(Model.Notice is not null){<div class="notice success" role="status">@Model.Notice</div>}
+@if(Model.Data.HasValue){
+<section class="card"><h2>@Text(Model.Equipo,"codigo_interno") · @Text(Model.Equipo,"categoria")</h2><p>@Text(Model.Equipo,"descripcion")</p><strong>Estado: @Text(Model.Equipo,"estado")</strong><p class="hint">Averiado, Mantenimiento y Fuera de servicio impiden ofrecer el equipo para reservas nuevas.</p></section>
+@if(Model.Reservas.Any()){
+<section class="card"><h2>Reservas asociadas que requieren atención</h2><p>La reparación no cancela ni cambia estas reservas. Si el equipo no estará listo, revisa la asignación desde su ficha.</p>
+@foreach(var r in Model.Reservas){<p><a asp-page="/Reserva" asp-route-id="@Text(r,"reserva_id")">Reserva #@Text(r,"reserva_id") · @Text(r,"cliente")</a> · @Text(r,"estado") · @Date(r,"fecha_inicio") — @Date(r,"fecha_fin")</p>}
+</section>}
+@if(Model.CanStart){
+<section class="card"><h2>Registrar reparación o mantenimiento</h2><p>El equipo quedará en Mantenimiento desde hoy, según la fecha de SQL Server.</p><form method="post" asp-page-handler="Iniciar" asp-route-id="@Model.Id" class="form-grid">
+<label asp-for="Tipo">Tipo de trabajo</label><select asp-for="Tipo"><option>Correctivo</option><option>Preventivo</option></select>
+<label asp-for="Descripcion">Problema y trabajo previsto</label><textarea asp-for="Descripcion" rows="4" maxlength="300" required></textarea>
+<label asp-for="Costo">Costo registrado</label><input id="Costo" name="Costo" value="@Model.Costo.ToString(System.Globalization.CultureInfo.InvariantCulture)" type="number" min="0" max="99999999.99" step="0.01" required /><p class="hint">Puedes indicar cero y registrar el costo final al terminar.</p>
+<button class="button primary" type="submit">Iniciar mantenimiento</button></form></section>}
+<section class="card"><h2>Historial de mantenimiento</h2>
+@if(!Model.History.Any()){<p>No hay mantenimientos registrados.</p>}
+@foreach(var m in Model.History){
+<article class="reservation-item"><h3>@Text(m,"tipo") · @(Has(m,"fecha_fin")?"Finalizado":"En reparación")</h3><p>@Text(m,"descripcion")</p><p>Responsable: @Text(m,"operador") · Inicio: @Date(m,"fecha_inicio") · Fin: @Date(m,"fecha_fin") · Costo: @Money(m,"costo").ToString("N2")</p>
+@if(!Has(m,"fecha_fin")){
+<form method="post" asp-page-handler="Finalizar" asp-route-id="@Model.Id" class="form-grid"><input type="hidden" name="mantenimientoId" value="@Text(m,"mantenimiento_id")" />
+<label>Costo final<input name="Costo" value="@Money(m,"costo").ToString(System.Globalization.CultureInfo.InvariantCulture)" type="number" min="0" max="99999999.99" step="0.01" required /></label>
+<label>Resultado de la revisión<select name="estadoEquipo" required><option value="">Selecciona el resultado</option><option value="Disponible">Reparado y apto para alquilar</option><option value="Averiado">Sigue averiado</option><option value="Fuera de servicio">Retirar de servicio</option></select></label>
+<p class="hint">Solo indica reparado cuando el equipo esté listo para salir. Si conserva reservas activas, quedará Reservado.</p><button class="button primary" type="submit">Finalizar mantenimiento</button></form>
+}</article>}
+</section>}
+</main></body></html>
